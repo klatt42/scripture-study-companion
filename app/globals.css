@@ -1,0 +1,139 @@
+@import "tailwindcss";
+
+/* ============================================
+   PASTOR'S COPILOT - LITURGICAL DESIGN SYSTEM
+   ============================================ */
+
+:root {
+  /* Base Colors */
+  --background: #FDFCFA; /* Warm cream background */
+  --foreground: #2C2C2C; /* Deep text color */
+
+  /* Liturgical Purple (Primary Brand) */
+  --purple-deep: #5B2C6F; /* Royal purple - primary */
+  --purple-medium: #7E3F8F; /* Vibrant liturgical purple */
+  --purple-light: #9B6BA8; /* Accent purple */
+  --purple-very-light: #E8D5F0; /* Backgrounds */
+  --purple-tint: #F5EBFA; /* Subtle backgrounds */
+
+  /* Supporting Liturgical Colors */
+  --green-liturgical: #2D5016; /* Ordinary time - growth/study */
+  --green-sage: #6B8E4E; /* Secondary green */
+  --gold: #D4A017; /* Celebration - achievements */
+  --amber: #E5B84A; /* Warm gold variant */
+  --crimson: #8B0000; /* Passion/Pentecost - important actions */
+
+  /* Neutrals */
+  --text-dark: #2C2C2C;
+  --text-medium: #5A5A5A;
+  --text-light: #8A8A8A;
+  --border-gray: #E5E5E5;
+  --background-cream: #FDFCFA;
+  --warm-gray: #F8F7F5;
+  --white: #FFFFFF;
+}
+
+@theme inline {
+  /* Tailwind CSS v4 Theme Configuration */
+
+  /* Colors */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  /* Liturgical Purple Palette */
+  --color-purple-deep: var(--purple-deep);
+  --color-purple-medium: var(--purple-medium);
+  --color-purple-light: var(--purple-light);
+  --color-purple-very-light: var(--purple-very-light);
+  --color-purple-tint: var(--purple-tint);
+
+  /* Supporting Colors */
+  --color-green-liturgical: var(--green-liturgical);
+  --color-green-sage: var(--green-sage);
+  --color-gold: var(--gold);
+  --color-amber: var(--amber);
+  --color-crimson: var(--crimson);
+
+  /* Neutrals */
+  --color-text-dark: var(--text-dark);
+  --color-text-medium: var(--text-medium);
+  --color-text-light: var(--text-light);
+  --color-border-gray: var(--border-gray);
+  --color-warm-gray: var(--warm-gray);
+
+  /* Fonts */
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  /* Spacing Scale */
+  --spacing-xs: 0.25rem; /* 4px */
+  --spacing-sm: 0.5rem; /* 8px */
+  --spacing-md: 1rem; /* 16px */
+  --spacing-lg: 1.5rem; /* 24px */
+  --spacing-xl: 2rem; /* 32px */
+  --spacing-2xl: 3rem; /* 48px */
+
+  /* Border Radius */
+  --radius-sm: 0.25rem; /* 4px */
+  --radius-md: 0.5rem; /* 8px */
+  --radius-lg: 0.75rem; /* 12px */
+  --radius-xl: 1rem; /* 16px */
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+  /* Transitions */
+  --transition-fast: 150ms;
+  --transition-normal: 300ms;
+}
+
+/* NO dark mode - single liturgical light theme only */
+
+/* Ensure proper height inheritance for min-h-screen to work */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--background-cream);
+  color: var(--text-dark);
+  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Headings - Serif for liturgical feel */
+h1, h2, h3, h4, h5, h6 {
+  font-family: Georgia, 'Times New Roman', serif;
+  color: var(--text-dark);
+  font-weight: 600;
+}
+
+/* Custom Utility Classes */
+.liturgical-gradient {
+  background: linear-gradient(135deg, var(--purple-deep) 0%, var(--purple-medium) 100%);
+}
+
+.section-purple {
+  --section-color: var(--purple-deep);
+  --section-color-medium: var(--purple-medium);
+  --section-color-light: var(--purple-light);
+}
+
+.section-green {
+  --section-color: var(--green-liturgical);
+  --section-color-medium: var(--green-sage);
+}
+
+.section-gold {
+  --section-color: var(--gold);
+  --section-color-medium: var(--amber);
+}
+
+.section-crimson {
+  --section-color: var(--crimson);
+}
