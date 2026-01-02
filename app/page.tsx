@@ -8,7 +8,9 @@ import {
   Sparkles,
   ArrowRight,
   CheckCircle,
-  Cross
+  BookMarked,
+  Brain,
+  Users
 } from 'lucide-react';
 
 export default function LandingPage() {
@@ -20,10 +22,10 @@ export default function LandingPage() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg liturgical-gradient flex items-center justify-center">
-                <Cross className="w-5 h-5 text-white" />
+                <BookOpen className="w-5 h-5 text-white" />
               </div>
               <span className="text-xl font-semibold text-purple-deep" style={{ fontFamily: 'Georgia, serif' }}>
-                Pastor's Copilot
+                Scripture Study Companion
               </span>
             </div>
             <div className="flex items-center gap-4">
@@ -49,14 +51,14 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto" style={{ textAlign: 'center' }}>
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-tint text-purple-deep text-sm font-medium mb-6">
             <Sparkles className="w-4 h-4" />
-            Your AI Ministry Companion
+            Your AI Study Companion
           </div>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-text-dark mb-6 leading-tight" style={{ fontFamily: 'Georgia, serif' }}>
-            Your Faithful
-            <span className="block text-purple-deep">Ministry Copilot</span>
+            Go Deeper in
+            <span className="block text-purple-deep">Scripture Study</span>
           </h1>
           <p style={{ display: 'block', width: '100%', maxWidth: '42rem', margin: '0 auto 2rem auto', whiteSpace: 'normal' }} className="text-xl text-text-medium leading-relaxed">
-            Like a trusted assistant by your side, Pastor's Copilot helps you prepare sermons, discover hymns, search scripture, and organize your ministry — so you can focus on what matters most: shepherding your flock.
+            Your personal guide to deeper Bible study. Generate study guides, track reading plans, memorize verses, and grow in understanding — whether studying alone or with a group.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
@@ -81,10 +83,10 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto">
           <div className="mb-16" style={{ textAlign: 'center' }}>
             <h2 className="text-3xl sm:text-4xl font-bold text-text-dark mb-4" style={{ fontFamily: 'Georgia, serif' }}>
-              Your Copilot's Toolkit
+              Your Study Toolkit
             </h2>
             <p style={{ display: 'block', width: '100%', maxWidth: '42rem', margin: '0 auto', whiteSpace: 'normal' }} className="text-lg text-text-medium">
-              AI-powered tools designed to assist pastors and ministry leaders in their sacred calling.
+              AI-powered tools designed to help you understand and apply Scripture more deeply.
             </p>
           </div>
 
@@ -95,49 +97,49 @@ export default function LandingPage() {
                 <Lightbulb className="w-6 h-6 text-purple-deep" />
               </div>
               <h3 className="text-xl font-semibold text-text-dark mb-2" style={{ fontFamily: 'Georgia, serif' }}>
-                Sermon Ideas & Outlines
+                Study Guide Generator
               </h3>
               <p className="text-text-medium">
-                Your copilot generates fresh sermon ideas and detailed outlines based on scripture, themes, or liturgical seasons.
+                AI creates comprehensive study guides with context, discussion questions, and cross-references for any passage.
               </p>
             </div>
 
             {/* Feature 2 */}
             <div className="bg-white rounded-2xl p-6 shadow-md hover:shadow-lg transition-shadow">
               <div className="w-12 h-12 rounded-xl bg-green-sage/20 flex items-center justify-center mb-4">
-                <BookOpen className="w-6 h-6 text-green-liturgical" />
+                <BookMarked className="w-6 h-6 text-green-liturgical" />
               </div>
               <h3 className="text-xl font-semibold text-text-dark mb-2" style={{ fontFamily: 'Georgia, serif' }}>
-                AI Bible Search
+                Reading Plans
               </h3>
               <p className="text-text-medium">
-                Ask your copilot to find scripture by theme, topic, or question — get relevant verses instantly.
+                Follow pre-built or custom reading plans with daily tracking, streaks, and reflection prompts.
               </p>
             </div>
 
             {/* Feature 3 */}
             <div className="bg-white rounded-2xl p-6 shadow-md hover:shadow-lg transition-shadow">
               <div className="w-12 h-12 rounded-xl bg-amber/20 flex items-center justify-center mb-4">
-                <Music className="w-6 h-6 text-gold" />
+                <Brain className="w-6 h-6 text-gold" />
               </div>
               <h3 className="text-xl font-semibold text-text-dark mb-2" style={{ fontFamily: 'Georgia, serif' }}>
-                Hymn Finder
+                Verse Memory
               </h3>
               <p className="text-text-medium">
-                Let your copilot search 100,000+ hymns to find the perfect songs for any service, season, or theme.
+                Memorize Scripture with flashcards using proven spaced repetition techniques for lasting retention.
               </p>
             </div>
 
             {/* Feature 4 */}
             <div className="bg-white rounded-2xl p-6 shadow-md hover:shadow-lg transition-shadow">
               <div className="w-12 h-12 rounded-xl bg-crimson/10 flex items-center justify-center mb-4">
-                <Calendar className="w-6 h-6 text-crimson" />
+                <Users className="w-6 h-6 text-crimson" />
               </div>
               <h3 className="text-xl font-semibold text-text-dark mb-2" style={{ fontFamily: 'Georgia, serif' }}>
-                Calendar & Notes
+                Study Groups
               </h3>
               <p className="text-text-medium">
-                Your copilot keeps your ministry organized with an integrated calendar and note-taking system.
+                Create or join study groups for shared reading plans, discussions, and accountability.
               </p>
             </div>
           </div>
@@ -149,10 +151,10 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-text-dark mb-4" style={{ fontFamily: 'Georgia, serif' }}>
-              How Your Copilot Works
+              How It Works
             </h2>
             <p className="text-lg text-text-medium">
-              Get your AI ministry assistant up and running in minutes.
+              Start your deeper Scripture study journey in minutes.
             </p>
           </div>
 
@@ -178,10 +180,10 @@ export default function LandingPage() {
               </div>
               <div className="text-sm font-semibold text-purple-medium mb-2">Step 2</div>
               <h3 className="text-xl font-semibold text-text-dark mb-2" style={{ fontFamily: 'Georgia, serif' }}>
-                Choose Your Task
+                Choose Your Study
               </h3>
               <p className="text-text-medium">
-                Tell your copilot what you need: sermon prep, Bible search, hymn selection, and more.
+                Pick a reading plan, generate a study guide, or start memorizing verses.
               </p>
             </div>
 
@@ -192,10 +194,10 @@ export default function LandingPage() {
               </div>
               <div className="text-sm font-semibold text-purple-medium mb-2">Step 3</div>
               <h3 className="text-xl font-semibold text-text-dark mb-2" style={{ fontFamily: 'Georgia, serif' }}>
-                Get AI Assistance
+                Grow in Understanding
               </h3>
               <p className="text-text-medium">
-                Receive thoughtful, instant suggestions from your faithful ministry copilot.
+                Get AI-powered insights, track your progress, and go deeper in God's Word.
               </p>
             </div>
           </div>
@@ -206,16 +208,16 @@ export default function LandingPage() {
       <section className="py-20 px-4 sm:px-6 lg:px-8 liturgical-gradient">
         <div className="max-w-4xl mx-auto" style={{ textAlign: 'center' }}>
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4" style={{ fontFamily: 'Georgia, serif' }}>
-            Ready for Your Ministry Copilot?
+            Ready to Go Deeper?
           </h2>
           <p style={{ display: 'block', width: '100%', maxWidth: '42rem', margin: '0 auto 2rem auto', whiteSpace: 'normal' }} className="text-xl text-purple-very-light">
-            Join pastors who trust their copilot to save hours each week — giving them more time for what truly matters: serving their congregation.
+            Join thousands who are transforming their Bible study with AI-powered tools — making every moment in Scripture more meaningful.
           </p>
           <Link
             href="/signup"
             className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-white text-purple-deep font-semibold text-lg hover:bg-purple-tint transition-colors shadow-lg"
           >
-            Get Your Copilot Free
+            Start Studying Free
             <ArrowRight className="w-5 h-5" />
           </Link>
         </div>
@@ -226,14 +228,14 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-md liturgical-gradient flex items-center justify-center">
-              <Cross className="w-4 h-4 text-white" />
+              <BookOpen className="w-4 h-4 text-white" />
             </div>
             <span className="text-text-medium">
-              Pastor's Copilot
+              Scripture Study Companion
             </span>
           </div>
           <p className="text-text-light text-sm">
-            &copy; {new Date().getFullYear()} Pastor's Copilot. Your faithful AI ministry assistant.
+            &copy; {new Date().getFullYear()} Scripture Study Companion. Your personal guide to deeper Scripture study.
           </p>
         </div>
       </footer>

@@ -35,11 +35,11 @@ export default function LoginPage() {
           <div className="flex justify-between items-center h-16">
             <div>
               <h1 className="text-3xl font-bold" style={{ fontFamily: 'Georgia, serif', color: '#FFFFFF' }}>
-                Pastor's Copilot
+                Scripture Study Companion
               </h1>
             </div>
             <div className="flex items-center justify-center absolute left-1/2 transform -translate-x-1/2">
-              <span className="text-5xl font-bold text-white" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>✝</span>
+              <span className="text-5xl font-bold text-white" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>📖</span>
             </div>
           </div>
         </div>
@@ -54,7 +54,7 @@ export default function LoginPage() {
               Sign In
             </h2>
             <p className="text-lg" style={{ color: 'var(--text-medium)' }}>
-              Welcome back to your sacred ministry assistant
+              Welcome back to your personal guide for deeper Scripture study
             </p>
           </div>
 

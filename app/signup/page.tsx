@@ -39,11 +39,11 @@ export default function SignupPage() {
           <div className="flex justify-between items-center h-16">
             <div>
               <h1 className="text-3xl font-bold" style={{ fontFamily: 'Georgia, serif', color: '#FFFFFF' }}>
-                Pastor&apos;s Copilot
+                Scripture Study Companion
               </h1>
             </div>
             <div className="flex items-center justify-center absolute left-1/2 transform -translate-x-1/2">
-              <span className="text-5xl font-bold text-white" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>✝</span>
+              <span className="text-5xl font-bold text-white" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>📖</span>
             </div>
           </div>
         </div>
@@ -58,7 +58,7 @@ export default function SignupPage() {
               Create Account
             </h2>
             <p className="text-lg" style={{ color: 'var(--text-medium)' }}>
-              Begin your AI-powered ministry journey
+              Begin your journey to deeper Scripture study
             </p>
           </div>
 
@@ -83,7 +83,7 @@ export default function SignupPage() {
                 required
                 className="w-full px-5 py-4 rounded-lg transition-all duration-200 text-lg"
                 style={{ border: '2px solid var(--border-gray)', outline: 'none' }}
-                placeholder="Pastor John Smith"
+                placeholder="John Smith"
                 onFocus={(e) => {
                   e.target.style.borderColor = 'var(--purple-deep)';
                   e.target.style.boxShadow = '0 0 0 3px rgba(91, 44, 111, 0.1)';
@@ -107,7 +107,7 @@ export default function SignupPage() {
                 required
                 className="w-full px-5 py-4 rounded-lg transition-all duration-200 text-lg"
                 style={{ border: '2px solid var(--border-gray)', outline: 'none' }}
-                placeholder="pastorjohn"
+                placeholder="johnsmith"
                 onFocus={(e) => {
                   e.target.style.borderColor = 'var(--purple-deep)';
                   e.target.style.boxShadow = '0 0 0 3px rgba(91, 44, 111, 0.1)';
@@ -131,7 +131,7 @@ export default function SignupPage() {
                 required
                 className="w-full px-5 py-4 rounded-lg transition-all duration-200 text-lg"
                 style={{ border: '2px solid var(--border-gray)', outline: 'none' }}
-                placeholder="pastor@church.com"
+                placeholder="john@email.com"
                 onFocus={(e) => {
                   e.target.style.borderColor = 'var(--purple-deep)';
                   e.target.style.boxShadow = '0 0 0 3px rgba(91, 44, 111, 0.1)';
