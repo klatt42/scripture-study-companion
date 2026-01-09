@@ -1,41 +1,85 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
+import DashboardHeader from '@/components/DashboardHeader';
+import { BookOpen, Languages, History, Link2, Lightbulb, Loader2 } from 'lucide-react';
 
-export default function SermonWriterPage() {
-  const [theme, setTheme] = useState('');
-  const [scripture, setScripture] = useState('');
-  const [targetLength, setTargetLength] = useState('30min');
-  const [audienceType, setAudienceType] = useState('general');
+interface DeepDiveResult {
+  passage: string;
+  passageText: string;
+  wordStudies: {
+    word: string;
+    original: string;
+    language: string;
+    definition: string;
+    usage: string;
+  }[];
+  historicalContext: {
+    setting: string;
+    audience: string;
+    culturalBackground: string;
+  };
+  literaryContext: {
+    genre: string;
+    structure: string;
+    literaryDevices: string[];
+  };
+  crossReferences: {
+    reference: string;
+    connection: string;
+  }[];
+  theologicalThemes: {
+    theme: string;
+    explanation: string;
+  }[];
+  applicationInsights: string[];
+}
+
+export default function DeepDivePage() {
+  const [passage, setPassage] = useState('');
+  const [focusAreas, setFocusAreas] = useState<string[]>(['wordStudy', 'historical', 'crossRef']);
   const [loading, setLoading] = useState(false);
-  const [sermon, setSermon] = useState<any>(null);
+  const [result, setResult] = useState<DeepDiveResult | null>(null);
   const [error, setError] = useState('');
 
-  const handleGenerate = async (e: React.FormEvent) => {
+  const focusOptions = [
+    { id: 'wordStudy', label: 'Word Studies', icon: Languages },
+    { id: 'historical', label: 'Historical Context', icon: History },
+    { id: 'crossRef', label: 'Cross References', icon: Link2 },
+    { id: 'theological', label: 'Theological Themes', icon: BookOpen },
+    { id: 'application', label: 'Application Insights', icon: Lightbulb },
+  ];
+
+  const toggleFocus = (id: string) => {
+    setFocusAreas((prev) =>
+      prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]
+    );
+  };
+
+  const handleAnalyze = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!passage.trim()) return;
+
     setLoading(true);
     setError('');
-    setSermon(null);
+    setResult(null);
 
     try {
-      const response = await fetch('/api/sermon-writer', {
+      const response = await fetch('/api/deep-dive', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          theme,
-          scripture_reference: scripture,
-          target_length: targetLength,
-          audience_type: audienceType,
+          passage,
+          focusAreas,
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to generate sermon');
+        throw new Error('Failed to analyze passage');
       }
 
       const data = await response.json();
-      setSermon(data.sermon);
+      setResult(data.analysis);
     } catch (err: any) {
       setError(err.message || 'Something went wrong');
     } finally {
@@ -43,123 +87,71 @@ export default function SermonWriterPage() {
     }
   };
 
-  const handleSave = async () => {
-    if (!sermon) return;
-
-    try {
-      const response = await fetch('/api/sermons', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: sermon.title,
-          theme,
-          scripture_reference: scripture,
-          content: sermon,
-          target_length: targetLength,
-          audience_type: audienceType,
-          status: 'draft',
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to save sermon');
-      }
-
-      alert('Sermon saved successfully!');
-    } catch (err: any) {
-      alert('Error saving sermon: ' + err.message);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-4">
-              <Link
-                href="/dashboard"
-                className="text-gray-600 hover:text-gray-900"
-              >
-                ← Back
-              </Link>
-              <h1 className="text-2xl font-bold text-gray-900">
-                AI Sermon Writer
-              </h1>
-            </div>
-          </div>
-        </div>
-      </div>
+      <DashboardHeader
+        showBackLink
+        pageTitle="Deep Dive"
+        pageIcon="🔬"
+        colorScheme="blue"
+      />
 
-      {/* Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid lg:grid-cols-2 gap-8">
+        <div className="grid lg:grid-cols-5 gap-8">
           {/* Left: Input Form */}
-          <div>
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">
-                Sermon Details
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sticky top-8">
+              <h2 className="text-xl font-semibold mb-2" style={{ fontFamily: 'Georgia, serif' }}>
+                Passage Analysis
               </h2>
+              <p className="text-sm text-gray-600 mb-6">
+                Enter a Bible passage for comprehensive study including word studies,
+                historical context, and cross-references.
+              </p>
 
-              <form onSubmit={handleGenerate} className="space-y-6">
+              <form onSubmit={handleAnalyze} className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Theme / Topic *
+                    Bible Passage *
                   </label>
                   <input
                     type="text"
-                    value={theme}
-                    onChange={(e) => setTheme(e.target.value)}
+                    value={passage}
+                    onChange={(e) => setPassage(e.target.value)}
                     required
-                    placeholder="e.g., Faith in difficult times"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="e.g., John 1:1-14 or Romans 8:28-30"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Scripture Reference (Optional)
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Focus Areas
                   </label>
-                  <input
-                    type="text"
-                    value={scripture}
-                    onChange={(e) => setScripture(e.target.value)}
-                    placeholder="e.g., John 3:16 or Romans 8:28-30"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Target Length
-                  </label>
-                  <select
-                    value={targetLength}
-                    onChange={(e) => setTargetLength(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="15min">15 minutes</option>
-                    <option value="30min">30 minutes</option>
-                    <option value="45min">45 minutes</option>
-                    <option value="60min">60 minutes</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Audience Type
-                  </label>
-                  <select
-                    value={audienceType}
-                    onChange={(e) => setAudienceType(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="general">General Congregation</option>
-                    <option value="youth">Youth</option>
-                    <option value="seniors">Seniors</option>
-                    <option value="children">Children</option>
-                  </select>
+                  <div className="space-y-2">
+                    {focusOptions.map((option) => {
+                      const Icon = option.icon;
+                      const isSelected = focusAreas.includes(option.id);
+                      return (
+                        <button
+                          key={option.id}
+                          type="button"
+                          onClick={() => toggleFocus(option.id)}
+                          className={`w-full flex items-center gap-3 p-3 rounded-lg border transition-all ${
+                            isSelected
+                              ? 'bg-blue-50 border-blue-300 text-blue-700'
+                              : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
+                          }`}
+                        >
+                          <Icon className="w-5 h-5" />
+                          <span className="font-medium">{option.label}</span>
+                          {isSelected && (
+                            <span className="ml-auto text-blue-600">✓</span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 {error && (
@@ -170,122 +162,216 @@ export default function SermonWriterPage() {
 
                 <button
                   type="submit"
-                  disabled={loading}
-                  className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={loading || !passage.trim()}
+                  className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {loading ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <svg
-                        className="animate-spin h-5 w-5"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                          fill="none"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        />
-                      </svg>
-                      Generating Sermon...
-                    </span>
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Analyzing Passage...
+                    </>
                   ) : (
-                    'Generate Sermon with AI'
+                    <>
+                      <BookOpen className="w-5 h-5" />
+                      Analyze Passage
+                    </>
                   )}
                 </button>
               </form>
             </div>
           </div>
 
-          {/* Right: Output */}
-          <div>
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 min-h-[600px]">
-              {!sermon && !loading && (
-                <div className="flex items-center justify-center h-full">
-                  <div className="text-center text-gray-500">
-                    <svg
-                      className="mx-auto h-12 w-12 text-gray-400 mb-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                      />
-                    </svg>
-                    <p className="text-lg font-medium">
-                      Your sermon will appear here
-                    </p>
-                    <p className="text-sm mt-2">
-                      Fill in the details and click "Generate" to start
-                    </p>
-                  </div>
-                </div>
-              )}
+          {/* Right: Results */}
+          <div className="lg:col-span-3">
+            {!result && !loading && (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+                <BookOpen className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                <h3 className="text-lg font-semibold mb-2" style={{ fontFamily: 'Georgia, serif' }}>
+                  Your Analysis Will Appear Here
+                </h3>
+                <p className="text-gray-600">
+                  Enter a Bible passage and select your focus areas to begin deep study.
+                </p>
+              </div>
+            )}
 
-              {sermon && (
-                <div className="prose max-w-none">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold text-gray-900 m-0">
-                      {sermon.title}
-                    </h2>
-                    <button
-                      onClick={handleSave}
-                      className="px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition"
-                    >
-                      Save Sermon
-                    </button>
-                  </div>
+            {loading && (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+                <Loader2 className="w-12 h-12 mx-auto mb-4 text-blue-500 animate-spin" />
+                <p className="text-gray-600">Analyzing {passage}...</p>
+                <p className="text-sm text-gray-500 mt-2">This may take a moment</p>
+              </div>
+            )}
 
-                  {sermon.scripture && (
-                    <p className="text-gray-600 italic mb-6">
-                      Scripture: {sermon.scripture}
-                    </p>
+            {result && (
+              <div className="space-y-6">
+                {/* Passage Header */}
+                <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl p-6">
+                  <h2 className="text-2xl font-bold mb-2" style={{ fontFamily: 'Georgia, serif' }}>
+                    {result.passage}
+                  </h2>
+                  {result.passageText && (
+                    <p className="text-blue-100 italic">"{result.passageText}"</p>
                   )}
+                </div>
 
-                  <div className="space-y-6">
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                        Introduction
+                {/* Word Studies */}
+                {result.wordStudies && result.wordStudies.length > 0 && (
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Languages className="w-5 h-5 text-blue-600" />
+                      <h3 className="text-lg font-semibold" style={{ fontFamily: 'Georgia, serif' }}>
+                        Word Studies
                       </h3>
-                      <div className="text-gray-700 whitespace-pre-wrap">
-                        {sermon.introduction}
-                      </div>
                     </div>
-
-                    {sermon.points?.map((point: any, idx: number) => (
-                      <div key={idx}>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                          Point {idx + 1}: {point.title}
-                        </h3>
-                        <div className="text-gray-700 space-y-2 whitespace-pre-wrap">
-                          {point.content}
+                    <div className="space-y-4">
+                      {result.wordStudies.map((word, idx) => (
+                        <div key={idx} className="p-4 bg-blue-50 rounded-lg">
+                          <div className="flex items-baseline gap-2 mb-2">
+                            <span className="font-bold text-blue-900">{word.word}</span>
+                            <span className="text-sm text-blue-600">({word.original})</span>
+                            <span className="text-xs bg-blue-200 text-blue-800 px-2 py-0.5 rounded">
+                              {word.language}
+                            </span>
+                          </div>
+                          <p className="text-gray-700 mb-1">
+                            <strong>Definition:</strong> {word.definition}
+                          </p>
+                          <p className="text-gray-600 text-sm">
+                            <strong>Usage:</strong> {word.usage}
+                          </p>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
+                  </div>
+                )}
 
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                        Conclusion
+                {/* Historical Context */}
+                {result.historicalContext && (
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <History className="w-5 h-5 text-amber-600" />
+                      <h3 className="text-lg font-semibold" style={{ fontFamily: 'Georgia, serif' }}>
+                        Historical Context
                       </h3>
-                      <div className="text-gray-700 whitespace-pre-wrap">
-                        {sermon.conclusion}
+                    </div>
+                    <div className="space-y-4">
+                      <div>
+                        <h4 className="font-medium text-gray-900 mb-1">Setting</h4>
+                        <p className="text-gray-700">{result.historicalContext.setting}</p>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-gray-900 mb-1">Original Audience</h4>
+                        <p className="text-gray-700">{result.historicalContext.audience}</p>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-gray-900 mb-1">Cultural Background</h4>
+                        <p className="text-gray-700">{result.historicalContext.culturalBackground}</p>
                       </div>
                     </div>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+
+                {/* Literary Context */}
+                {result.literaryContext && (
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <BookOpen className="w-5 h-5 text-purple-600" />
+                      <h3 className="text-lg font-semibold" style={{ fontFamily: 'Georgia, serif' }}>
+                        Literary Context
+                      </h3>
+                    </div>
+                    <div className="space-y-4">
+                      <div>
+                        <h4 className="font-medium text-gray-900 mb-1">Genre</h4>
+                        <p className="text-gray-700">{result.literaryContext.genre}</p>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-gray-900 mb-1">Structure</h4>
+                        <p className="text-gray-700">{result.literaryContext.structure}</p>
+                      </div>
+                      {result.literaryContext.literaryDevices?.length > 0 && (
+                        <div>
+                          <h4 className="font-medium text-gray-900 mb-2">Literary Devices</h4>
+                          <div className="flex flex-wrap gap-2">
+                            {result.literaryContext.literaryDevices.map((device, idx) => (
+                              <span
+                                key={idx}
+                                className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm"
+                              >
+                                {device}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Cross References */}
+                {result.crossReferences && result.crossReferences.length > 0 && (
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Link2 className="w-5 h-5 text-green-600" />
+                      <h3 className="text-lg font-semibold" style={{ fontFamily: 'Georgia, serif' }}>
+                        Cross References
+                      </h3>
+                    </div>
+                    <div className="space-y-3">
+                      {result.crossReferences.map((ref, idx) => (
+                        <div key={idx} className="flex gap-4 p-3 bg-green-50 rounded-lg">
+                          <span className="font-semibold text-green-700 whitespace-nowrap">
+                            {ref.reference}
+                          </span>
+                          <span className="text-gray-700">{ref.connection}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Theological Themes */}
+                {result.theologicalThemes && result.theologicalThemes.length > 0 && (
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <BookOpen className="w-5 h-5 text-indigo-600" />
+                      <h3 className="text-lg font-semibold" style={{ fontFamily: 'Georgia, serif' }}>
+                        Theological Themes
+                      </h3>
+                    </div>
+                    <div className="space-y-4">
+                      {result.theologicalThemes.map((theme, idx) => (
+                        <div key={idx}>
+                          <h4 className="font-medium text-indigo-900 mb-1">{theme.theme}</h4>
+                          <p className="text-gray-700">{theme.explanation}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Application Insights */}
+                {result.applicationInsights && result.applicationInsights.length > 0 && (
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Lightbulb className="w-5 h-5 text-amber-500" />
+                      <h3 className="text-lg font-semibold" style={{ fontFamily: 'Georgia, serif' }}>
+                        Application Insights
+                      </h3>
+                    </div>
+                    <ul className="space-y-3">
+                      {result.applicationInsights.map((insight, idx) => (
+                        <li key={idx} className="flex gap-3">
+                          <span className="text-amber-500 font-bold">{idx + 1}.</span>
+                          <span className="text-gray-700">{insight}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>

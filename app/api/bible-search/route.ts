@@ -1,6 +1,9 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 
+// Allow up to 2 minutes for AI search
+export const maxDuration = 120;
+
 export async function POST(request: Request) {
   try {
     const supabase = await createClient();
@@ -166,7 +169,9 @@ Important:
       });
 
       if (!aiResponse.ok) {
-        throw new Error('AI Bible search failed');
+        const errorData = await aiResponse.json().catch(() => ({}));
+        console.error('[BIBLE-SEARCH] API error:', aiResponse.status, errorData);
+        throw new Error(`AI Bible search failed: ${errorData.error?.message || aiResponse.statusText}`);
       }
 
       const aiData = await aiResponse.json();

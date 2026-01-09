@@ -1,6 +1,9 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 
+// Allow up to 2 minutes for AI generation
+export const maxDuration = 120;
+
 export async function POST(request: Request) {
   try {
     const supabase = await createClient();
@@ -13,7 +16,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { general_theme, scriptures, audience_type } = body;
+    const { general_theme, scriptures, study_type } = body;
 
     if (!general_theme) {
       return NextResponse.json(
@@ -29,45 +32,45 @@ export async function POST(request: Request) {
 
     // Check if Anthropic API key is configured
     if (!process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY === 'your-anthropic-key-here') {
-      // Return mock sermon ideas for testing
-      const mockIdeas = [
+      // Return mock study topics for testing
+      const mockTopics = [
         {
-          title: `Finding ${general_theme} in Daily Life`,
+          title: `Understanding ${general_theme} in Scripture`,
           theme: general_theme,
-          scripture: scriptureList || 'Matthew 6:25-34',
-          description: `A practical exploration of how ${general_theme} manifests in our everyday experiences and challenges. This sermon helps believers connect biblical principles with real-world applications.`,
-          keyPoints: [
-            `Understanding ${general_theme} from a biblical perspective`,
-            'Practical steps to embody this principle daily',
-            'Overcoming obstacles and maintaining consistency',
+          scripture: scriptureList || 'Psalm 119:105-112',
+          description: `A foundational exploration of what the Bible teaches about ${general_theme}. This study traces key passages and helps you build a solid biblical understanding of this important topic.`,
+          keyQuestions: [
+            `What does Scripture reveal about ${general_theme}?`,
+            'How did biblical characters experience this truth?',
+            'What practical wisdom can we apply today?',
           ],
         },
         {
-          title: `The Biblical Foundation of ${general_theme}`,
+          title: `${general_theme}: A Personal Journey`,
+          theme: general_theme,
+          scripture: scriptureList || 'James 1:2-8',
+          description: `A reflective study examining how ${general_theme} relates to your personal spiritual growth. This study encourages self-examination and practical application in daily life.`,
+          keyQuestions: [
+            `How has ${general_theme} shaped your faith journey?`,
+            'What obstacles hinder growth in this area?',
+            'What steps can you take this week to grow?',
+          ],
+        },
+        {
+          title: `Living Out ${general_theme} Today`,
           theme: general_theme,
           scripture: scriptureList || 'Romans 12:1-2',
-          description: `A deep dive into what Scripture teaches about ${general_theme}. This sermon traces the theme throughout the Bible, from Old Testament foundations to New Testament fulfillment.`,
-          keyPoints: [
-            `${general_theme} in the Old Testament`,
-            `Jesus' teachings on ${general_theme}`,
-            'Living out this truth in the modern church',
-          ],
-        },
-        {
-          title: `${general_theme}: A Call to Action`,
-          theme: general_theme,
-          scripture: scriptureList || 'James 2:14-26',
-          description: `An inspiring message that moves beyond understanding to action. This sermon challenges the congregation to not just hear about ${general_theme}, but to actively live it out in their communities.`,
-          keyPoints: [
-            `Why ${general_theme} requires action, not just belief`,
-            'Practical ways to serve and demonstrate this principle',
-            'Stories of transformed lives through active faith',
+          description: `A practical study focused on applying ${general_theme} in modern life. This study bridges ancient wisdom with contemporary challenges and opportunities.`,
+          keyQuestions: [
+            `How does ${general_theme} apply to work and relationships?`,
+            'What cultural challenges do we face in this area?',
+            'How can we encourage others in this truth?',
           ],
         },
       ];
 
       return NextResponse.json({
-        ideas: mockIdeas,
+        topics: mockTopics,
         mock: true,
         message: 'Using mock data. Add ANTHROPIC_API_KEY to .env.local for AI generation.',
       });
@@ -75,40 +78,49 @@ export async function POST(request: Request) {
 
     // Real AI generation with Anthropic Claude
     const scripturePromptSection = scriptureList
-      ? `Lectionary/Assigned Scriptures: ${scriptureList}
+      ? `Scripture References: ${scriptureList}
 
-IMPORTANT: These are the assigned scripture readings for the service. Each sermon idea should incorporate and reference these specific passages. The sermon should help the congregation understand how these readings connect to the theme and to each other.`
-      : 'No specific scriptures assigned - suggest appropriate passages that support the theme.';
+IMPORTANT: These are specific scripture passages the user wants to study. Each topic should incorporate and reference these passages. Help the user understand how these readings connect to the theme.`
+      : 'No specific scriptures provided - suggest appropriate passages that support the theme.';
 
-    const prompt = `You are a pastoral assistant helping to generate sermon ideas for a minister preparing their weekly sermon. Based on the following input, generate 3 distinct sermon ideas:
+    const studyTypeDescriptions: Record<string, string> = {
+      'individual': 'someone doing personal devotional study at home',
+      'small-group': 'a small group Bible study with discussion',
+      'family': 'a family with children doing devotions together',
+      'academic': 'someone seeking deep theological and historical study',
+    };
+
+    const audience = studyTypeDescriptions[study_type] || 'individual Bible study';
+
+    const prompt = `You are a Bible study assistant helping to generate study topic suggestions. Based on the following input, generate 3 distinct study topic ideas:
 
 General Theme: ${general_theme}
 ${scripturePromptSection}
-Audience: ${audience_type}
+Study Context: ${audience}
 
-For each sermon idea, provide:
+For each study topic, provide:
 1. A compelling, specific title
 2. The main theme
-3. The scripture reference(s) - ${scriptureList ? 'use the assigned scriptures listed above' : 'suggest appropriate passages'}
-4. A 2-3 sentence description of what the sermon would cover
-5. Three key points that would be explored
+3. The scripture reference(s) - ${scriptureList ? 'use the provided scriptures' : 'suggest appropriate passages'}
+4. A 2-3 sentence description of what the study would cover
+5. Three key questions to explore during the study
 
-Make each idea unique and approach the theme from different angles (theological, practical, inspirational, etc.).
+Make each topic unique and approach the theme from different angles (foundational understanding, personal application, community/practical living, etc.).
 
 Format the response as JSON with this structure:
 {
-  "ideas": [
+  "topics": [
     {
-      "title": "sermon title",
+      "title": "study title",
       "theme": "${general_theme}",
       "scripture": "scripture reference(s)",
       "description": "description text",
-      "keyPoints": ["point 1", "point 2", "point 3"]
+      "keyQuestions": ["question 1", "question 2", "question 3"]
     }
   ]
 }
 
-Make them theologically sound, pastorally sensitive, and relevant for ${audience_type} audience.`;
+Make them biblically grounded, spiritually enriching, and appropriate for ${audience}.`;
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -130,15 +142,61 @@ Make them theologically sound, pastorally sensitive, and relevant for ${audience
     });
 
     if (!response.ok) {
-      throw new Error('Failed to generate sermon ideas with AI');
+      const errorData = await response.json().catch(() => ({}));
+      console.error('[STUDY-TOPICS] API error:', response.status, errorData);
+
+      // Fallback to mock data on API errors (including auth errors)
+      const mockTopics = [
+        {
+          title: `Understanding ${general_theme} in Scripture`,
+          theme: general_theme,
+          scripture: scriptureList || 'Psalm 119:105-112',
+          description: `A foundational exploration of what the Bible teaches about ${general_theme}. This study traces key passages and helps you build a solid biblical understanding of this important topic.`,
+          keyQuestions: [
+            `What does Scripture reveal about ${general_theme}?`,
+            'How did biblical characters experience this truth?',
+            'What practical wisdom can we apply today?',
+          ],
+        },
+        {
+          title: `${general_theme}: A Personal Journey`,
+          theme: general_theme,
+          scripture: scriptureList || 'James 1:2-8',
+          description: `A reflective study examining how ${general_theme} relates to your personal spiritual growth. This study encourages self-examination and practical application in daily life.`,
+          keyQuestions: [
+            `How has ${general_theme} shaped your faith journey?`,
+            'What obstacles hinder growth in this area?',
+            'What steps can you take this week to grow?',
+          ],
+        },
+        {
+          title: `Living Out ${general_theme} Today`,
+          theme: general_theme,
+          scripture: scriptureList || 'Romans 12:1-2',
+          description: `A practical study focused on applying ${general_theme} in modern life. This study bridges ancient wisdom with contemporary challenges and opportunities.`,
+          keyQuestions: [
+            `How does ${general_theme} apply to work and relationships?`,
+            'What cultural challenges do we face in this area?',
+            'How can we encourage others in this truth?',
+          ],
+        },
+      ];
+
+      return NextResponse.json({
+        topics: mockTopics,
+        mock: true,
+        message: `AI unavailable (${errorData.error?.message || 'API error'}). Using mock data.`,
+      });
     }
 
     const data = await response.json();
     const responseText = data.content[0].text;
 
     // Extract JSON from the response
-    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+    const cleanedText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+    const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
+      console.error('[STUDY-TOPICS] No JSON found in response');
       throw new Error('Failed to parse AI response');
     }
 
@@ -146,7 +204,7 @@ Make them theologically sound, pastorally sensitive, and relevant for ${audience
 
     return NextResponse.json(result);
   } catch (error: any) {
-    console.error('Sermon ideas generation error:', error);
+    console.error('Study topics generation error:', error);
     return NextResponse.json(
       { error: error.message || 'Internal server error' },
       { status: 500 }

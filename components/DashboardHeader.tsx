@@ -14,7 +14,7 @@ interface DashboardHeaderProps {
   backLinkText?: string;
   pageTitle?: string;
   pageIcon?: string;
-  colorScheme?: 'purple' | 'green' | 'gold' | 'crimson';
+  colorScheme?: 'purple' | 'green' | 'gold' | 'crimson' | 'blue';
   rightContent?: React.ReactNode;
 }
 
@@ -33,6 +33,10 @@ const colorSchemes = {
   },
   crimson: {
     gradient: 'linear-gradient(135deg, var(--crimson) 0%, #B22222 100%)',
+    className: '',
+  },
+  blue: {
+    gradient: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%)',
     className: '',
   },
 };
@@ -139,24 +143,24 @@ export default function DashboardHeader({
         {/* Desktop Layout (3-column grid) */}
         <div className="hidden sm:grid grid-cols-3 items-center h-16">
           {/* Left side */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 min-w-0">
             {showBackLink && (
               <Link
                 href={backLinkHref}
-                className="text-white/80 hover:text-white transition-colors flex items-center gap-2"
+                className="text-white/80 hover:text-white transition-colors flex items-center gap-1 shrink-0"
               >
                 <span>←</span> Back
               </Link>
             )}
             {pageTitle ? (
-              <div className="flex items-center gap-3">
-                {pageIcon && <span className="text-3xl">{pageIcon}</span>}
-                <h1 className="text-xl lg:text-2xl font-bold text-white" style={{ fontFamily: 'Georgia, serif' }}>
+              <div className="flex items-center gap-2 min-w-0">
+                {pageIcon && <span className="text-2xl shrink-0">{pageIcon}</span>}
+                <h1 className="text-lg lg:text-xl font-bold text-white truncate" style={{ fontFamily: 'Georgia, serif' }}>
                   {pageTitle}
                 </h1>
               </div>
             ) : (
-              <h1 className="text-2xl lg:text-3xl font-bold" style={{ fontFamily: 'Georgia, serif', color: '#FFFFFF' }}>
+              <h1 className="text-lg lg:text-xl font-bold truncate" style={{ fontFamily: 'Georgia, serif', color: '#FFFFFF' }}>
                 Scripture Study Companion
               </h1>
             )}

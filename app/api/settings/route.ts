@@ -18,7 +18,7 @@ export async function GET() {
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('username, full_name, church_affiliation, denomination')
+      .select('username, full_name, study_group, denomination')
       .eq('id', user.id)
       .single();
 
@@ -31,10 +31,12 @@ export async function GET() {
       font_size: 'medium',
     };
 
+    // Use email username as fallback for display name
+    const emailName = user.email?.split('@')[0] || '';
     const defaultProfile = {
-      username: '',
-      full_name: '',
-      church_affiliation: '',
+      username: emailName,
+      full_name: emailName,
+      study_group: '',
       denomination: '',
     };
 
@@ -76,7 +78,7 @@ export async function POST(request: Request) {
           id: user.id,
           username: profile?.username || user.email?.split('@')[0] || 'user',
           full_name: profile?.full_name || user.email?.split('@')[0] || 'User',
-          church_affiliation: profile?.church_affiliation || '',
+          study_group: profile?.study_group || '',
           denomination: profile?.denomination || '',
         });
 
@@ -91,7 +93,7 @@ export async function POST(request: Request) {
         .update({
           username: profile.username,
           full_name: profile.full_name,
-          church_affiliation: profile.church_affiliation,
+          study_group: profile.study_group,
           denomination: profile.denomination,
           updated_at: new Date().toISOString(),
         })

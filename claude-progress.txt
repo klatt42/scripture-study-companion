@@ -1,0 +1,392 @@
+# Scripture Study Companion - Session Handoff
+**Last Updated**: 2026-01-02
+**Session**: Major Feature Transformation Complete
+
+---
+
+## Project Overview
+
+**Scripture Study Companion** is a Bible study app forked from Pastor's Copilot (pastoraid-genesis). It targets lay people doing individual or group Bible study, transforming sermon-focused features into study tools.
+
+**Tech Stack**: Next.js 15, TypeScript, Tailwind CSS v4, Supabase, Claude AI (Anthropic)
+
+**Location**: `/home/klatt42/projects/scripture-study-companion`
+**GitHub**: `klatt42/scripture-study-companion`
+**Dev Server**: Port 3318
+
+---
+
+## Completed Work
+
+### Phase 1: Project Setup (Previous Session)
+- [x] Forked from Pastor's Copilot
+- [x] Created GitHub repo
+- [x] Created new Supabase project (fntcasdassvplgcabdty)
+- [x] Configured .env.local with all credentials
+- [x] Ran database schema (supabase-schema-bible-study.sql)
+
+### Phase 2: Branding Updates (Previous Session)
+- [x] Updated login page (Pastor's Copilot -> Scripture Study Companion)
+- [x] Updated signup page
+- [x] Updated landing page with Bible study features
+- [x] Updated DashboardHeader component
+
+### Phase 3: Authentication Fixes (Previous Session)
+- [x] Fixed email confirmation issue (auto-confirm in signup/actions.ts)
+- [x] Created reset-user.ts script for password resets
+- [x] User klatt42@gmail.com can login (password: Scripture2025!)
+
+### Phase 4: Feature Transformation (THIS SESSION)
+
+#### Deep Dive - Passage Analysis Tool
+- [x] **Page**: `/app/dashboard/deep-dive/page.tsx` - Complete rewrite
+  - Word studies with Greek/Hebrew
+  - Historical context
+  - Literary context
+  - Cross-references
+  - Theological themes
+  - Application insights
+- [x] **API**: `/app/api/deep-dive/route.ts` - Complete rewrite
+  - Added maxDuration=300 for long AI requests
+  - Mock data for testing
+  - Full Claude AI integration
+
+#### Reading Plans Dynamic Route
+- [x] **Page**: `/app/dashboard/reading-plans/[id]/page.tsx` - NEW
+  - Shows plan details with progress tracking
+  - Day selection with checkboxes
+  - Passage links to Bible Search
+  - Reflection questions
+  - Notes section per day
+  - Uses `use(params)` for Next.js 15 async params
+
+#### Verse Memory with SM-2 Algorithm
+- [x] **Page**: `/app/dashboard/memory/page.tsx` - Enhanced
+  - Links to practice page
+  - Add verse modal
+  - Due today indicator
+- [x] **Practice Page**: `/app/dashboard/memory/practice/page.tsx` - NEW
+  - Flashcard interface with show/hide
+  - Rating buttons (again/hard/good/easy)
+  - Interval preview on each button
+  - Full SM-2 spaced repetition algorithm
+  - Session stats tracking
+- [x] **API**: `/app/api/memory-verses/route.ts` - NEW
+  - GET: List verses with due filtering
+  - POST: Add new verses
+  - PATCH: Update with SM-2 review
+  - DELETE: Remove verses
+
+#### My Guides - Study Guide Library
+- [x] **Page**: `/app/dashboard/my-guides/page.tsx` - Complete rewrite
+  - Search and filter functionality
+  - Tag-based filtering
+  - Displays COAI sections (Context, Observation, Application, Interpretation)
+  - Individual guide view with full content
+  - Delete functionality
+
+#### Bible Search Fix
+- [x] **API**: `/app/api/bible-search/route.ts`
+  - Added maxDuration=120
+  - Improved error handling with proper JSON parsing
+  - Better logging for debugging
+
+#### Groups Functionality
+- [x] **Page**: `/app/dashboard/groups/page.tsx` - Enhanced
+- [x] **Detail Page**: `/app/dashboard/groups/[id]/page.tsx` - NEW
+  - Three tabs: Discussions, Study Materials, Members
+  - Discussion posts (questions, insights, prayer requests)
+  - Study materials with links to Deep Dive and Study Guide
+  - Member list with roles
+  - Join/leave functionality
+
+#### UI Component Updates
+- [x] **DashboardHeader**: Added "blue" colorScheme for Deep Dive
+
+### Phase 5: Build & Testing (THIS SESSION)
+- [x] All TypeScript errors fixed
+- [x] Build passes with only ESLint warnings (no errors)
+- [x] All pages return 200 OK
+- [x] API auth properly rejects unauthenticated requests
+
+---
+
+## Current Credentials
+
+See `.env.local` for credentials (not committed to repo).
+
+---
+
+## Feature Status Summary
+
+| Feature | Page Status | API Status | Notes |
+|---------|-------------|------------|-------|
+| Dashboard | Working | N/A | 13 feature cards |
+| Study Guide Generator | Working | Working | Generates inductive study guides |
+| Study Topics | Working | Working | AI-powered topic suggestions |
+| Deep Dive | Working | Working | Full passage analysis |
+| Reading Plans | Working | Working | Dynamic route with [id], streak tracking |
+| Verse Memory | Working | Working | SM-2 spaced repetition |
+| My Guides | Working | Working | Full CRUD operations |
+| Groups | Working | Working | Full CRUD with roles, posts, members |
+| Bible Search | Working | Working | AI-powered with fallback |
+| Theology Research | Working | Working | Academic research tool |
+| Hymn Finder | Working | Working | Search by theme |
+| Notes | Working | Working | Personal notes |
+| Calendar | Working | Working | Study sessions |
+| Settings | Working | Working | Profile and preferences |
+| Community | Working | Working | Global forum with posts, comments, categories |
+| Sessions | Working | Mock data | Study session tracking |
+
+---
+
+## Database Schema
+
+Tables created (see supabase-schema-bible-study.sql):
+- profiles
+- user_settings
+- study_guides (replaces sermons)
+- study_topics (replaces sermon_ideas)
+- reading_plans
+- reading_plan_days
+- user_reading_progress
+- memory_verses
+- study_sessions
+- study_groups
+- study_group_members
+- notes
+- calendar_events
+- hymns
+- research_notes
+
+---
+
+## Files Modified/Created This Session
+
+### New Files
+- `/app/dashboard/reading-plans/[id]/page.tsx`
+- `/app/dashboard/memory/practice/page.tsx`
+- `/app/dashboard/groups/[id]/page.tsx`
+- `/app/api/memory-verses/route.ts`
+
+### Modified Files
+- `/app/dashboard/deep-dive/page.tsx` - Complete rewrite
+- `/app/api/deep-dive/route.ts` - Complete rewrite
+- `/app/dashboard/my-guides/page.tsx` - Complete rewrite
+- `/app/api/bible-search/route.ts` - Error handling fix
+- `/components/DashboardHeader.tsx` - Added blue colorScheme
+
+---
+
+## Session: 2026-01-04 - Reading Plans Supabase Integration
+
+### Completed This Session
+- [x] Created `/app/api/reading-plans/route.ts` - GET all plans, POST start plan, DELETE stop plan
+- [x] Created `/app/api/reading-plans/[id]/route.ts` - GET plan details with days, PATCH update progress
+- [x] Created `supabase-seed-reading-plans.sql` - Seeds reading_plan_days for all 4 plans (365+90+31+40 days)
+- [x] Updated `/app/dashboard/reading-plans/page.tsx` - Fetches from API, shows active/available plans
+- [x] Updated `/app/dashboard/reading-plans/[id]/page.tsx` - Fetches from API, marks days complete
+- [x] Build passes with only ESLint warnings (no errors)
+
+### API Endpoints Created
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/reading-plans` | GET | List all public plans + user's active plans with progress |
+| `/api/reading-plans` | POST | Start a new reading plan (creates user_reading_progress) |
+| `/api/reading-plans?plan_id=X` | DELETE | Stop/remove a reading plan |
+| `/api/reading-plans/[id]` | GET | Get plan details with all days and user progress |
+| `/api/reading-plans/[id]` | PATCH | Update progress (mark day complete/uncomplete, update streak) |
+
+### Action Required: Run Seed Script
+To populate the reading days, run in Supabase SQL Editor:
+```sql
+-- Copy contents of supabase-seed-reading-plans.sql
+-- Run in: https://supabase.com/dashboard/project/fntcasdassvplgcabdty/sql
+```
+
+---
+
+## Session: 2026-01-09 - Groups Supabase Integration
+
+### Completed This Session
+- [x] Created `/app/api/groups/route.ts` - GET all groups (user's + public), POST create group
+- [x] Created `/app/api/groups/[id]/route.ts` - GET details with members/posts, PATCH update, DELETE
+- [x] Created `/app/api/groups/[id]/members/route.ts` - POST join, DELETE leave, PATCH update role
+- [x] Created `/app/api/groups/[id]/posts/route.ts` - GET posts, POST create, DELETE
+- [x] Updated `/app/dashboard/groups/page.tsx` - Now fetches from API, create group modal, join groups
+- [x] Updated `/app/dashboard/groups/[id]/page.tsx` - Now fetches from API, create posts, leave group
+- [x] Build passes with only ESLint warnings (no errors)
+
+### API Endpoints Created
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/groups` | GET | List user's groups + public groups for discovery |
+| `/api/groups` | POST | Create a new group (creator becomes admin) |
+| `/api/groups/[id]` | GET | Get group details with members, posts, membership status |
+| `/api/groups/[id]` | PATCH | Update group info (admin/leader only) |
+| `/api/groups/[id]` | DELETE | Delete group (admin only) |
+| `/api/groups/[id]/members` | POST | Join a public group |
+| `/api/groups/[id]/members` | DELETE | Leave a group (prevents last admin leaving) |
+| `/api/groups/[id]/members` | PATCH | Update member role (admin only) |
+| `/api/groups/[id]/posts` | GET | List posts with filtering by category |
+| `/api/groups/[id]/posts` | POST | Create a post (members only) |
+| `/api/groups/[id]/posts` | DELETE | Delete a post (author or admin) |
+
+### Features Implemented
+- **Group List Page**: Fetches from API, shows My Groups and Discover tabs
+- **Create Group Modal**: Name, description, current study, meeting schedule, public/private
+- **Join Group**: Click button to join public groups
+- **Group Detail Page**: Three tabs (Discussions, Study Materials, Members)
+- **Post Categories**: discussion, question, prayer, resource, testimony
+- **Role Management**: admin, leader, member with visual badges
+- **Leave Group**: Confirmation modal, prevents last admin from leaving
+
+---
+
+## Session: 2026-01-09 - Community Supabase Integration
+
+### Completed This Session
+- [x] Created `/app/api/community/route.ts` - GET list posts (global + public groups), POST create, DELETE
+- [x] Created `/app/api/community/[id]/route.ts` - GET post details with comments, PATCH update, DELETE
+- [x] Created `/app/api/community/[id]/comments/route.ts` - GET comments, POST create, DELETE
+- [x] Updated `/app/dashboard/community/page.tsx` - Full rewrite: post listing, category filters, create post modal
+- [x] Created `/app/dashboard/community/[id]/page.tsx` - NEW: post detail page with comments
+- [x] Build passes with only ESLint warnings (no errors)
+
+### API Endpoints Created
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/community` | GET | List global posts + posts from public groups with category filtering |
+| `/api/community` | POST | Create a new global post |
+| `/api/community?post_id=X` | DELETE | Delete own post |
+| `/api/community/[id]` | GET | Get post details with comments |
+| `/api/community/[id]` | PATCH | Update own post (title, content, category) |
+| `/api/community/[id]` | DELETE | Delete own post with all comments |
+| `/api/community/[id]/comments` | GET | List comments for a post |
+| `/api/community/[id]/comments` | POST | Add a comment to a post |
+| `/api/community/[id]/comments?comment_id=X` | DELETE | Delete own comment |
+
+### Features Implemented
+- **Community Forum Page**: Full API integration replacing "Coming Soon" placeholder
+- **Category Filtering**: All, Discussion, Questions, Prayer Requests, Resources, Testimonies
+- **Create Post Modal**: Category selection, title, content
+- **Post Cards**: Shows category badge, author, timestamp, comment count
+- **Post Detail Page**: Full post content with edit/delete for authors
+- **Comment System**: Add comments, delete own comments, threaded display
+- **Access Control**: Global posts viewable by all, group posts respect privacy settings
+
+---
+
+## Session: 2026-01-09 - Sessions Supabase Integration
+
+### Completed This Session
+- [x] Created `/app/api/sessions/route.ts` - GET list sessions, POST create, DELETE
+- [x] Created `/app/api/sessions/stats/route.ts` - GET study statistics with streak calculation
+- [x] Updated `/app/dashboard/sessions/page.tsx` - Full rewrite: API integration, Log Session modal
+- [x] Build passes with only ESLint warnings (no errors)
+
+### API Endpoints Created
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/sessions` | GET | List user's study sessions with relative dates |
+| `/api/sessions` | POST | Create a new study session |
+| `/api/sessions?session_id=X` | DELETE | Delete a session |
+| `/api/sessions/stats` | GET | Get stats (total, streak, weekly progress, type breakdown) |
+
+### Features Implemented
+- **Session Logging**: Log study sessions with duration, passage, notes, and type
+- **Session Types**: Reading, Study, Memory, Prayer with color-coded badges
+- **Duration Presets**: Quick buttons for 10, 15, 20, 30, 45, 60 minutes
+- **Date Selection**: Log sessions for today or past dates
+- **Statistics Dashboard**: Total sessions, total minutes, current streak, weekly goal %
+- **Streak Calculation**: Calculates consecutive days (must start from today or yesterday)
+- **Weekly Progress Bar**: Visual progress toward weekly goal
+- **Type Breakdown**: Shows minutes by type for the current week
+- **Delete Functionality**: Remove sessions with stats auto-refresh
+
+---
+
+## Remaining Work (Future Sessions)
+
+### Database Integration
+- [x] Connect Reading Plans to Supabase ✅ DONE (2026-01-04)
+- [x] Connect Groups to Supabase ✅ DONE (2026-01-09)
+- [x] Connect Community to Supabase ✅ DONE (2026-01-09)
+- [x] Connect Sessions to Supabase ✅ DONE (2026-01-09)
+
+### Feature Enhancements
+- [ ] Add sharing functionality for study guides
+- [ ] Add export to PDF for study guides
+- [ ] Add group invitations via email
+- [ ] Add push notifications for memory verse reminders
+- [ ] Add progress analytics dashboard
+
+### Polish
+- [ ] Address ESLint warnings (unused imports, any types, unescaped entities)
+- [ ] Add loading states and better error messages
+- [ ] Mobile responsiveness review
+- [ ] Accessibility audit
+
+---
+
+## Next Session Startup
+
+```bash
+cd ~/projects/scripture-study-companion
+cat claude-progress.txt
+PORT=3318 npm run dev
+```
+
+Then login at http://localhost:3318 with:
+- Email: klatt42@gmail.com
+- Password: Scripture2025!
+
+---
+
+## Session: 2026-01-09 - End-to-End Testing & RLS Fix
+
+### Completed This Session
+- [x] Created comprehensive E2E test suite (`e2e-test.ts`)
+- [x] Fixed RLS infinite recursion bug in `study_group_members` policies
+- [x] Created Supabase migration (`supabase/migrations/20260109000001_fix_rls_complete.sql`)
+- [x] All 36 tests passing with 100% success rate
+
+### E2E Test Coverage
+| Category | Tests | Status |
+|----------|-------|--------|
+| Authentication | Login | Pass |
+| Page Loads | 14 pages | All Pass |
+| Sessions API | GET, POST, DELETE, Stats | All Pass |
+| Reading Plans API | GET plans, GET progress | All Pass |
+| Groups API | GET, POST, Members, DELETE | All Pass |
+| Community API | GET, POST, Comments, DELETE | All Pass |
+| Memory Verses API | GET, POST, DELETE | All Pass |
+| Study Guides API | GET | Pass |
+| Notes API | GET | Pass |
+| Calendar API | GET | Pass |
+
+### RLS Fix Details
+**Problem**: `study_group_members` SELECT policy referenced itself, causing infinite recursion.
+
+**Solution**: Created SECURITY DEFINER helper functions to bypass RLS for membership checks:
+- `get_user_group_ids()` - Returns group IDs user belongs to
+- `is_group_member(UUID)` - Checks if user is member of group
+- `is_group_admin(UUID)` - Checks if user is admin of group
+
+**Files Created**:
+- `supabase/migrations/20260109000001_fix_rls_complete.sql`
+- `e2e-test.ts` - Comprehensive E2E test suite
+
+---
+
+## Build Status
+
+Last successful build: 2026-01-09
+- TypeScript: Pass
+- All pages: 200 OK
+- API auth: Working
+- E2E Tests: 36/36 passing (100%)
+- ESLint: Warnings only (no blocking errors)
+- API routes: /api/reading-plans, /api/reading-plans/[id], /api/groups, /api/groups/[id], /api/groups/[id]/members, /api/groups/[id]/posts, /api/community, /api/community/[id], /api/community/[id]/comments, /api/sessions, /api/sessions/stats
+
+---

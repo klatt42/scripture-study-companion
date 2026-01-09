@@ -1,6 +1,9 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 
+// Allow up to 5 minutes for AI generation
+export const maxDuration = 300;
+
 export async function POST(request: Request) {
   try {
     const supabase = await createClient();
@@ -15,120 +18,202 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { theme, scripture_reference, target_length, audience_type } = body;
+    const { passage, focusAreas = ['wordStudy', 'historical', 'crossRef'] } = body;
 
-    if (!theme) {
+    if (!passage) {
       return NextResponse.json(
-        { error: 'Theme is required' },
+        { error: 'Bible passage is required' },
         { status: 400 }
       );
     }
 
     // Check if Anthropic API key is configured
     if (!process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY === 'your-anthropic-key-here') {
-      // Return mock sermon for testing
-      const mockSermon = {
-        title: `Sermon: ${theme}`,
-        scripture: scripture_reference || 'Various passages',
-        introduction: `Dear brothers and sisters in Christ,
-
-Today we gather to explore the profound theme of "${theme}". This topic touches the very heart of our faith and speaks to the challenges we face in our daily walk with God.
-
-${scripture_reference ? `As we reflect on ${scripture_reference}, we are reminded of God's eternal truth and unwavering love.` : 'Throughout Scripture, we find guidance and wisdom for this very topic.'}
-
-Let us open our hearts and minds to what the Lord would teach us today.`,
-        points: [
+      // Return mock analysis for testing
+      const mockAnalysis = {
+        passage: passage,
+        passageText: 'For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life.',
+        wordStudies: [
           {
-            title: 'Understanding God\'s Purpose',
-            content: `The first thing we must understand about ${theme} is that it begins with recognizing God's sovereign plan in our lives.
-
-Scripture tells us that God works all things together for good for those who love Him. This isn't just a comforting phrase - it's a fundamental truth that should shape how we approach ${theme}.
-
-When we face difficulties related to this theme, we must remember:
-- God is in control
-- His timing is perfect
-- His purposes are always good
-
-Application: This week, when you encounter situations related to ${theme}, pause and ask yourself: "What might God be teaching me through this?"`,
+            word: 'loved',
+            original: 'ἠγάπησεν (ēgapēsen)',
+            language: 'Greek',
+            definition: 'Agape love - unconditional, sacrificial love that seeks the highest good of the beloved',
+            usage: 'This verb form indicates a decisive action of love, pointing to God\'s deliberate choice to love humanity',
           },
           {
-            title: 'Living Out Our Faith',
-            content: `Secondly, ${theme} calls us to action. Faith without works is dead, as James reminds us.
-
-We cannot simply understand ${theme} intellectually - we must live it out daily. This means:
-
-1. In our homes: ${theme} should transform how we interact with our families
-2. In our workplaces: Our colleagues should see ${theme} reflected in our character
-3. In our community: We must be witnesses of ${theme} to a watching world
-
-The early church understood this principle. They didn't just believe - they lived their faith boldly and authentically.`,
+            word: 'world',
+            original: 'κόσμον (kosmon)',
+            language: 'Greek',
+            definition: 'The ordered universe; in this context, humanity as a whole',
+            usage: 'Emphasizes the universal scope of God\'s love - not just Israel but all people',
           },
           {
-            title: 'The Hope We Have',
-            content: `Finally, ${theme} points us toward our eternal hope in Christ.
-
-No matter what challenges we face in this area, we have a hope that cannot be shaken. This hope is not based on our circumstances, our efforts, or even our understanding.
-
-Our hope is anchored in:
-- Christ's finished work on the cross
-- The promise of His return
-- The assurance of eternal life
-
-${scripture_reference ? `As ${scripture_reference} reminds us, our hope is secure in Him.` : 'Scripture assures us that this hope will not disappoint.'}`,
+            word: 'believes',
+            original: 'πιστεύων (pisteuōn)',
+            language: 'Greek',
+            definition: 'To trust, have faith in, rely upon completely',
+            usage: 'Present participle indicating ongoing, continuous faith - not just mental assent but life commitment',
           },
         ],
-        conclusion: `In conclusion, dear friends, ${theme} is not just a topic for theological discussion - it's a living reality that should transform every aspect of our lives.
-
-As we leave this place today, I challenge each of you to:
-1. Reflect deeply on what we've discussed
-2. Pray for God's wisdom in applying these truths
-3. Take one specific action this week related to ${theme}
-
-Remember, you don't walk this journey alone. We are a community of believers, supporting and encouraging one another.
-
-Let us pray: Heavenly Father, thank you for your word and for the truth about ${theme}. Give us wisdom, courage, and faith to live out these principles. May our lives be a testimony to your grace. In Jesus' name, Amen.`,
+        historicalContext: {
+          setting: 'Jesus is speaking with Nicodemus, a Pharisee and member of the Jewish ruling council (Sanhedrin), who came to Jesus at night. This conversation takes place early in Jesus\' ministry in Jerusalem.',
+          audience: 'Originally addressed to Nicodemus, a learned religious leader seeking to understand Jesus\' teaching. John\'s Gospel was written for a broader audience of both Jewish and Gentile believers.',
+          culturalBackground: 'Nicodemus represents the religious establishment of first-century Judaism. The reference to Moses lifting up the serpent (v.14) connects to Numbers 21, which any Jewish teacher would recognize. The concept of "eternal life" (zōē aiōnios) was understood as life in the age to come.',
+        },
+        literaryContext: {
+          genre: 'Gospel narrative with discourse/dialogue',
+          structure: 'Part of Jesus\' teaching discourse with Nicodemus (John 3:1-21). Verse 16 serves as a summary statement of the Gospel\'s central message.',
+          literaryDevices: ['Parallelism', 'Contrast (perish/eternal life)', 'Universal language', 'Purpose clause'],
+        },
+        crossReferences: [
+          {
+            reference: 'Romans 5:8',
+            connection: 'God demonstrates His own love toward us, in that while we were still sinners, Christ died for us - emphasizes the undeserved nature of God\'s love',
+          },
+          {
+            reference: '1 John 4:9-10',
+            connection: 'God\'s love was revealed through sending His Son - John expands on the same theme in his epistle',
+          },
+          {
+            reference: 'Genesis 22:2',
+            connection: 'Abraham\'s offering of Isaac foreshadows God giving His only Son - the "beloved son" typology',
+          },
+          {
+            reference: 'Isaiah 53:5-6',
+            connection: 'The suffering servant passage prophesies the substitutionary nature of Christ\'s sacrifice',
+          },
+        ],
+        theologicalThemes: [
+          {
+            theme: 'God\'s Universal Love',
+            explanation: 'God\'s love extends to all humanity ("the world"), not based on merit or ethnicity. This was revolutionary in a context where many Jews expected God\'s salvation to be limited to Israel.',
+          },
+          {
+            theme: 'Substitutionary Atonement',
+            explanation: 'God "gave" His Son - the language of sacrifice and substitution. Christ takes the place of sinners, bearing the penalty we deserved.',
+          },
+          {
+            theme: 'Faith as the Means of Salvation',
+            explanation: 'Eternal life is received through believing, not through works, ritual, or ancestry. This emphasizes grace appropriated through faith.',
+          },
+          {
+            theme: 'Eternal Life vs. Perishing',
+            explanation: 'Two destinies are presented: eternal life (relationship with God forever) or perishing (eternal separation from God). The stakes of faith are ultimate.',
+          },
+        ],
+        applicationInsights: [
+          'God\'s love is not earned but freely given. Rest in His unconditional acceptance rather than trying to earn His favor.',
+          'Believing in Christ is not mere intellectual assent but ongoing trust and reliance. Examine whether your faith is living and active.',
+          'Share the good news of God\'s love with others. If God loves the whole world, we should have the same heart for all people.',
+          'Eternal life begins now, not just after death. Live today in the reality of your relationship with God through Christ.',
+        ],
       };
 
       return NextResponse.json({
-        sermon: mockSermon,
+        analysis: mockAnalysis,
         mock: true,
         message: 'Using mock data. Add ANTHROPIC_API_KEY to .env.local for AI generation.',
       });
     }
 
+    // Build focus areas string
+    const focusAreasMap: Record<string, string> = {
+      wordStudy: 'Word Studies (Greek/Hebrew analysis with definitions and usage)',
+      historical: 'Historical Context (setting, audience, cultural background)',
+      literary: 'Literary Context (genre, structure, literary devices)',
+      crossRef: 'Cross References (related passages with connections)',
+      theological: 'Theological Themes (major doctrines and themes)',
+      application: 'Application Insights (practical ways to apply this truth)',
+    };
+
+    const selectedFocusAreas = focusAreas
+      .filter((f: string) => focusAreasMap[f])
+      .map((f: string) => focusAreasMap[f])
+      .join('\n- ');
+
     // Real AI generation with Anthropic Claude
-    const prompt = `You are a pastoral assistant helping to write a sermon. Generate a complete sermon outline based on the following:
+    const prompt = `You are a Bible study assistant helping with deep passage analysis. Analyze the following Bible passage with scholarly depth while remaining accessible:
 
-Theme: ${theme}
-Scripture Reference: ${scripture_reference || 'Not specified - choose appropriate passages'}
-Target Length: ${target_length}
-Audience: ${audience_type}
+Bible Passage: ${passage}
 
-Please create a complete sermon with:
-1. A compelling title
-2. Scripture reference (if not provided, suggest one)
-3. Introduction (2-3 paragraphs)
-4. Three main points, each with:
-   - A clear title
-   - Scripture support
-   - Explanation
-   - Practical application
-5. Conclusion with call to action and closing prayer
+Focus Areas to include:
+- ${selectedFocusAreas}
 
-Format the response as JSON with this structure:
+Create a comprehensive analysis with:
+
+1. PASSAGE TEXT - The actual text of the passage
+
+2. WORD STUDIES (if requested) - 3-5 key words with:
+   - English word
+   - Original Hebrew/Greek with transliteration
+   - Language (Hebrew/Greek)
+   - Definition with theological nuance
+   - Usage notes for this context
+
+3. HISTORICAL CONTEXT (if requested):
+   - Setting: When, where, circumstances
+   - Audience: Who originally received this
+   - Cultural Background: Relevant customs, practices, worldview
+
+4. LITERARY CONTEXT (if requested):
+   - Genre: Type of biblical literature
+   - Structure: How passage fits in book
+   - Literary Devices: Parallelism, chiasm, metaphor, etc.
+
+5. CROSS REFERENCES (if requested) - 4-6 related passages with:
+   - Scripture reference
+   - Connection to the main passage
+
+6. THEOLOGICAL THEMES (if requested) - 3-5 major themes with:
+   - Theme name
+   - Explanation of how it appears in this passage
+
+7. APPLICATION INSIGHTS (if requested) - 3-5 practical applications
+
+IMPORTANT: Return ONLY valid JSON, no markdown. Use \\n for line breaks.
+
+Format:
 {
-  "title": "sermon title",
-  "scripture": "scripture reference",
-  "introduction": "introduction text",
-  "points": [
-    {"title": "point title", "content": "point content with scripture, explanation, and application"},
-    {"title": "point title", "content": "point content"},
-    {"title": "point title", "content": "point content"}
-  ],
-  "conclusion": "conclusion text with call to action and prayer"
+  "analysis": {
+    "passage": "${passage}",
+    "passageText": "the actual verse text",
+    "wordStudies": [
+      {
+        "word": "English word",
+        "original": "Greek/Hebrew with transliteration",
+        "language": "Greek or Hebrew",
+        "definition": "meaning and theological significance",
+        "usage": "how it functions in this context"
+      }
+    ],
+    "historicalContext": {
+      "setting": "historical setting",
+      "audience": "original recipients",
+      "culturalBackground": "relevant background"
+    },
+    "literaryContext": {
+      "genre": "genre type",
+      "structure": "structural analysis",
+      "literaryDevices": ["device1", "device2"]
+    },
+    "crossReferences": [
+      {
+        "reference": "Book Chapter:Verse",
+        "connection": "how it relates"
+      }
+    ],
+    "theologicalThemes": [
+      {
+        "theme": "Theme Name",
+        "explanation": "detailed explanation"
+      }
+    ],
+    "applicationInsights": ["insight 1", "insight 2", "insight 3"]
+  }
 }
 
-Make it theologically sound, pastorally sensitive, and practically applicable for ${audience_type} audience.`;
+Only include the sections that were requested in the focus areas. Return valid JSON only.`;
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -150,23 +235,35 @@ Make it theologically sound, pastorally sensitive, and practically applicable fo
     });
 
     if (!response.ok) {
-      throw new Error('Failed to generate sermon with AI');
+      const errorData = await response.json().catch(() => ({}));
+      console.error('[DEEP-DIVE] API error:', errorData);
+      throw new Error('Failed to analyze passage with AI');
     }
 
     const data = await response.json();
-    const sermonText = data.content[0].text;
+    const responseText = data.content[0].text;
+
+    console.log('[DEEP-DIVE] AI Response (first 500 chars):', responseText.substring(0, 500));
+
+    // Remove markdown code blocks if present
+    const cleanedText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
 
     // Extract JSON from the response
-    const jsonMatch = sermonText.match(/\{[\s\S]*\}/);
+    const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
-      throw new Error('Failed to parse AI response');
+      console.error('[DEEP-DIVE] No JSON found in response');
+      throw new Error('Invalid response from AI');
     }
 
-    const sermon = JSON.parse(jsonMatch[0]);
-
-    return NextResponse.json({ sermon });
+    try {
+      const result = JSON.parse(jsonMatch[0]);
+      return NextResponse.json(result);
+    } catch (parseError: any) {
+      console.error('[DEEP-DIVE] JSON parse error:', parseError.message);
+      throw new Error('Failed to parse AI response');
+    }
   } catch (error: any) {
-    console.error('Sermon generation error:', error);
+    console.error('Deep dive analysis error:', error);
     return NextResponse.json(
       { error: error.message || 'Internal server error' },
       { status: 500 }

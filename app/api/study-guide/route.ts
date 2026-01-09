@@ -13,119 +13,133 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { title, theme, scripture, description, key_points } = body;
+    const { passage, studyType = 'personal' } = body;
 
-    if (!title || !theme) {
+    if (!passage) {
       return NextResponse.json(
-        { error: 'Title and theme are required' },
+        { error: 'Bible passage is required' },
         { status: 400 }
       );
     }
 
     // Check if Anthropic API key is configured
     if (!process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY === 'your-anthropic-key-here') {
-      // Return mock sermon outline for testing
-      const mockOutline = {
-        title: title,
-        scripture: scripture,
-        introduction: `Welcome, brothers and sisters in Christ. Today we gather to explore "${title}".
-
-${description}
-
-As we dive into ${scripture}, we'll discover profound truths that speak directly to our lives today. This message is designed to not only inform our minds but transform our hearts and inspire us to action.
-
-Let's approach God's Word with open hearts, ready to receive what He has for us.`,
-        points: key_points.map((point: string, idx: number) => ({
-          title: point,
-          content: `${point} - A Deep Dive
-
-Scripture Foundation:
-${scripture} provides us with clear teaching on this principle. When we examine the context and original meaning, we discover layers of truth that apply directly to our situation.
-
-Theological Understanding:
-From a biblical perspective, ${point.toLowerCase()} is not merely a suggestion but a fundamental aspect of living out our faith. The early church understood this, and we see evidence throughout the New Testament of believers wrestling with and applying this truth.
-
-Practical Application:
-So what does this look like in our daily lives?
-
-1. In our personal walk: We must consistently ${point.toLowerCase()} through prayer, study, and reflection
-2. In our relationships: This principle transforms how we interact with family, friends, and even strangers
-3. In our community: The church becomes a beacon of hope when we collectively embody this truth
-
-Real-Life Example:
-Consider the story of [biblical figure/modern example] who exemplified ${point.toLowerCase()}. Their journey shows us that while the path may be challenging, the rewards of faithfulness are beyond measure.
-
-Challenge:
-This week, I challenge you to take one concrete step toward ${point.toLowerCase()} in your own life. Don't wait for perfect conditions - start where you are, with what you have.`,
-        })),
-        conclusion: `As we conclude, let's remember the heart of today's message: ${title}.
-
-We've explored how ${scripture} calls us to:
-${key_points.map((p: string, i: number) => `\n${i + 1}. ${p}`).join('')}
-
-These aren't just ideas to consider - they're invitations to transformation. God is calling each of us to respond, to take what we've learned today and live it out courageously.
-
-Closing Prayer:
-Heavenly Father, thank you for your Word and for the truth about ${theme}. Give us wisdom to understand, courage to apply, and perseverance to continue growing. May our lives be testimonies to your grace and power. Transform us from the inside out. In Jesus' name, Amen.
-
-Go in peace, knowing that the same Spirit who raised Christ from the dead lives in you and empowers you for every good work.`,
-        applicationQuestions: [
-          `How does understanding ${theme} change your perspective on current challenges?`,
-          `What specific action can you take this week to apply one of the key points?`,
-          `Who in your life needs to hear about ${theme}, and how can you share it?`,
-          `What obstacles might prevent you from living out this truth, and how can you overcome them?`,
-          `How can you encourage others in your church community to embrace ${theme}?`,
-        ],
+      // Return mock study guide for testing
+      const mockGuide = {
+        title: `Study Guide: ${passage}`,
+        passage: passage,
+        context: {
+          historical: `This passage was written in a specific historical context that shaped its meaning. Understanding the circumstances of the original audience helps us better grasp the message being conveyed. The cultural, political, and religious environment of the time provides important background for interpretation.`,
+          literary: `This passage fits within the larger narrative and literary structure of the book. The genre, literary devices, and relationship to surrounding passages all inform our understanding of the text.`,
+        },
+        observation: {
+          keyVerses: [
+            `Key verse 1 from ${passage} - This verse captures the central message of the passage.`,
+            `Key verse 2 from ${passage} - This verse provides important supporting truth.`,
+            `Key verse 3 from ${passage} - This verse offers practical application.`,
+          ],
+          importantWords: [
+            'Grace',
+            'Faith',
+            'Love',
+            'Redemption',
+            'Covenant',
+          ],
+          mainThemes: [
+            `God's faithfulness to His people`,
+            `The call to trust and obey`,
+            `Living in community with other believers`,
+          ],
+        },
+        interpretation: {
+          meaning: `This passage teaches us about God's character and His relationship with His people. The original audience would have understood this message in light of their covenant relationship with God. For us today, the timeless truths remain: God is faithful, His Word is trustworthy, and He calls us to respond in faith and obedience. The principles found here apply across all times and cultures because they reflect the unchanging nature of God.`,
+          crossReferences: [
+            `Cross reference 1 - Related passage that illuminates the theme`,
+            `Cross reference 2 - Old Testament background or prophecy`,
+            `Cross reference 3 - New Testament fulfillment or application`,
+          ],
+        },
+        application: {
+          personalQuestions: [
+            `What does this passage reveal about God's character?`,
+            `How does this truth challenge your current thinking or behavior?`,
+            `What specific area of your life needs to change in response?`,
+          ],
+          groupDiscussion: [
+            `Share a time when you experienced the truth of this passage in your own life.`,
+            `What obstacles might prevent us from living out these truths?`,
+            `How can we encourage one another to apply what we've learned?`,
+          ],
+          actionSteps: [
+            `Spend time this week meditating on the key verses from this passage.`,
+            `Identify one specific way to apply this truth in your daily life.`,
+            `Share what you've learned with someone else this week.`,
+          ],
+        },
       };
 
       return NextResponse.json({
-        outline: mockOutline,
+        guide: mockGuide,
         mock: true,
         message: 'Using mock data. Add ANTHROPIC_API_KEY to .env.local for AI generation.',
       });
     }
 
     // Real AI generation with Anthropic Claude
-    const prompt = `You are a pastoral assistant helping to create a detailed sermon outline. Based on this sermon idea, create a comprehensive outline that a pastor can use as a foundation for writing their full sermon:
+    const prompt = `You are a Bible study assistant helping to create a comprehensive inductive study guide. Based on this Bible passage, create a detailed study guide using the Observation-Interpretation-Application method:
 
-Title: ${title}
-Theme: ${theme}
-Scripture: ${scripture}
-Description: ${description}
-Key Points to Cover: ${key_points.join(', ')}
+Bible Passage: ${passage}
+Study Type: ${studyType === 'group' ? 'Group Study (include discussion questions)' : 'Personal Study'}
 
-Create a detailed sermon outline with:
-1. Introduction (3-4 paragraphs that hook the audience and introduce the topic)
-2. For EACH of the ${key_points.length} key points, provide:
-   - The point title
-   - Detailed content including:
-     * Scripture foundation and exegesis
-     * Theological explanation
-     * Practical application with specific examples
-     * A challenge or call to action related to this point
-3. Conclusion (powerful closing with summary, final challenge, and prayer)
-4. 5 application questions for personal reflection or small group discussion
+Create a detailed study guide with:
+
+1. CONTEXT - Provide historical and literary context
+   - Historical: When was this written? To whom? What were the circumstances?
+   - Literary: What genre is this? Where does it fit in the book's structure?
+
+2. OBSERVATION (What does it say?)
+   - Key Verses: 3-4 significant verses from the passage with brief explanation
+   - Important Words: 5-7 key words or phrases that deserve deeper study
+   - Main Themes: 2-4 major themes in this passage
+
+3. INTERPRETATION (What does it mean?)
+   - Meaning: A thorough explanation of the passage's meaning (2-3 paragraphs)
+   - Cross References: 3-4 related passages with brief explanation of connection
+
+4. APPLICATION (How should I respond?)
+   - Personal Questions: 3-4 reflection questions for individual study
+   - Group Discussion: 3-4 questions for group discussion (if group study)
+   - Action Steps: 3 specific, practical ways to apply this truth
 
 IMPORTANT: Return ONLY valid JSON, no markdown formatting or code blocks. Use \\n for line breaks within strings.
 
-Format the response as JSON with this structure:
+Format the response as JSON with this exact structure:
 {
-  "outline": {
-    "title": "${title}",
-    "scripture": "${scripture}",
-    "introduction": "introduction text (3-4 paragraphs with \\n\\n between them)",
-    "points": [
-      {
-        "title": "point title",
-        "content": "detailed content with \\n\\n separating sections"
-      }
-    ],
-    "conclusion": "conclusion with \\n\\n for paragraphs",
-    "applicationQuestions": ["question 1", "question 2", "question 3", "question 4", "question 5"]
+  "guide": {
+    "title": "Study Guide: ${passage}",
+    "passage": "${passage}",
+    "context": {
+      "historical": "historical context text",
+      "literary": "literary context text"
+    },
+    "observation": {
+      "keyVerses": ["verse 1 with explanation", "verse 2 with explanation", "verse 3 with explanation"],
+      "importantWords": ["word1", "word2", "word3", "word4", "word5"],
+      "mainThemes": ["theme 1", "theme 2", "theme 3"]
+    },
+    "interpretation": {
+      "meaning": "detailed explanation with \\n\\n for paragraphs",
+      "crossReferences": ["Reference 1 - explanation", "Reference 2 - explanation", "Reference 3 - explanation"]
+    },
+    "application": {
+      "personalQuestions": ["question 1?", "question 2?", "question 3?"],
+      "groupDiscussion": ["discussion question 1?", "discussion question 2?", "discussion question 3?"],
+      "actionSteps": ["action 1", "action 2", "action 3"]
+    }
   }
 }
 
-Make it theologically sound, pastorally sensitive, and rich with practical wisdom. Return valid JSON only.`;
+Make it biblically accurate, theologically sound, and practically applicable. Return valid JSON only.`;
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -147,81 +161,37 @@ Make it theologically sound, pastorally sensitive, and rich with practical wisdo
     });
 
     if (!response.ok) {
-      throw new Error('Failed to generate sermon outline with AI');
+      const errorData = await response.json().catch(() => ({}));
+      console.error('[STUDY-GUIDE] API error:', errorData);
+      throw new Error('Failed to generate study guide with AI');
     }
 
     const data = await response.json();
     const responseText = data.content[0].text;
 
-    console.log('[SERMON-OUTLINE] AI Response (first 500 chars):', responseText.substring(0, 500));
+    console.log('[STUDY-GUIDE] AI Response (first 500 chars):', responseText.substring(0, 500));
 
-    // Remove markdown code blocks if present (Claude sometimes wraps JSON)
+    // Remove markdown code blocks if present
     const cleanedText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
 
-    // Extract JSON from the response (matching sermon-ideas pattern)
+    // Extract JSON from the response
     const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
-      console.error('[SERMON-OUTLINE] No JSON found in response');
-      // Fallback to mock data
-      const mockOutline = {
-        title: title,
-        scripture: scripture,
-        introduction: `Welcome, brothers and sisters in Christ. Today we gather to explore "${title}".\n\n${description}\n\nAs we dive into ${scripture}, we'll discover profound truths that speak directly to our lives today. This message is designed to not only inform our minds but transform our hearts and inspire us to action.\n\nLet's approach God's Word with open hearts, ready to receive what He has for us.`,
-        points: key_points.map((point: string, idx: number) => ({
-          title: point,
-          content: `${point} - A Deep Dive\n\nScripture Foundation:\n${scripture} provides us with clear teaching on this principle. When we examine the context and original meaning, we discover layers of truth that apply directly to our situation.\n\nTheological Understanding:\nFrom a biblical perspective, ${point.toLowerCase()} is not merely a suggestion but a fundamental aspect of living out our faith. The early church understood this, and we see evidence throughout the New Testament of believers wrestling with and applying this truth.\n\nPractical Application:\nSo what does this look like in our daily lives?\n\n1. In our personal walk: We must consistently ${point.toLowerCase()} through prayer, study, and reflection\n2. In our relationships: This principle transforms how we interact with family, friends, and even strangers\n3. In our community: The church becomes a beacon of hope when we collectively embody this truth\n\nReal-Life Example:\nConsider the story of [biblical figure/modern example] who exemplified ${point.toLowerCase()}. Their journey shows us that while the path may be challenging, the rewards of faithfulness are beyond measure.\n\nChallenge:\nThis week, I challenge you to take one concrete step toward ${point.toLowerCase()} in your own life. Don't wait for perfect conditions - start where you are, with what you have.`,
-        })),
-        conclusion: `As we conclude, let's remember the heart of today's message: ${title}.\n\nWe've explored how ${scripture} calls us to:\n${key_points.map((p: string, i: number) => `\n${i + 1}. ${p}`).join('')}\n\nThese aren't just ideas to consider - they're invitations to transformation. God is calling each of us to respond, to take what we've learned today and live it out courageously.\n\nClosing Prayer:\nHeavenly Father, thank you for your Word and for the truth about ${theme}. Give us wisdom to understand, courage to apply, and perseverance to continue growing. May our lives be testimonies to your grace and power. Transform us from the inside out. In Jesus' name, Amen.\n\nGo in peace, knowing that the same Spirit who raised Christ from the dead lives in you and empowers you for every good work.`,
-        applicationQuestions: [
-          `How does understanding ${theme} change your perspective on current challenges?`,
-          `What specific action can you take this week to apply one of the key points?`,
-          `Who in your life needs to hear about ${theme}, and how can you share it?`,
-          `What obstacles might prevent you from living out this truth, and how can you overcome them?`,
-          `How can you encourage others in your church community to embrace ${theme}?`,
-        ],
-      };
-      return NextResponse.json({
-        outline: mockOutline,
-        fallback: true,
-        reason: 'No JSON found in AI response',
-      });
+      console.error('[STUDY-GUIDE] No JSON found in response');
+      throw new Error('Invalid response from AI');
     }
 
-    console.log('[SERMON-OUTLINE] Extracted JSON (first 500 chars):', jsonMatch[0].substring(0, 500));
+    console.log('[STUDY-GUIDE] Extracted JSON (first 500 chars):', jsonMatch[0].substring(0, 500));
 
     try {
       const result = JSON.parse(jsonMatch[0]);
       return NextResponse.json(result);
     } catch (parseError: any) {
-      console.error('[SERMON-OUTLINE] JSON parse error:', parseError.message);
-      console.error('[SERMON-OUTLINE] Failed JSON (first 500 chars):', jsonMatch[0].substring(0, 500));
-
-      // Fallback to mock data
-      const mockOutline = {
-        title: title,
-        scripture: scripture,
-        introduction: `Welcome, brothers and sisters in Christ. Today we gather to explore "${title}".\n\n${description}\n\nAs we dive into ${scripture}, we'll discover profound truths that speak directly to our lives today. This message is designed to not only inform our minds but transform our hearts and inspire us to action.\n\nLet's approach God's Word with open hearts, ready to receive what He has for us.`,
-        points: key_points.map((point: string, idx: number) => ({
-          title: point,
-          content: `${point} - A Deep Dive\n\nScripture Foundation:\n${scripture} provides us with clear teaching on this principle. When we examine the context and original meaning, we discover layers of truth that apply directly to our situation.\n\nTheological Understanding:\nFrom a biblical perspective, ${point.toLowerCase()} is not merely a suggestion but a fundamental aspect of living out our faith. The early church understood this, and we see evidence throughout the New Testament of believers wrestling with and applying this truth.\n\nPractical Application:\nSo what does this look like in our daily lives?\n\n1. In our personal walk: We must consistently ${point.toLowerCase()} through prayer, study, and reflection\n2. In our relationships: This principle transforms how we interact with family, friends, and even strangers\n3. In our community: The church becomes a beacon of hope when we collectively embody this truth\n\nReal-Life Example:\nConsider the story of [biblical figure/modern example] who exemplified ${point.toLowerCase()}. Their journey shows us that while the path may be challenging, the rewards of faithfulness are beyond measure.\n\nChallenge:\nThis week, I challenge you to take one concrete step toward ${point.toLowerCase()} in your own life. Don't wait for perfect conditions - start where you are, with what you have.`,
-        })),
-        conclusion: `As we conclude, let's remember the heart of today's message: ${title}.\n\nWe've explored how ${scripture} calls us to:\n${key_points.map((p: string, i: number) => `\n${i + 1}. ${p}`).join('')}\n\nThese aren't just ideas to consider - they're invitations to transformation. God is calling each of us to respond, to take what we've learned today and live it out courageously.\n\nClosing Prayer:\nHeavenly Father, thank you for your Word and for the truth about ${theme}. Give us wisdom to understand, courage to apply, and perseverance to continue growing. May our lives be testimonies to your grace and power. Transform us from the inside out. In Jesus' name, Amen.\n\nGo in peace, knowing that the same Spirit who raised Christ from the dead lives in you and empowers you for every good work.`,
-        applicationQuestions: [
-          `How does understanding ${theme} change your perspective on current challenges?`,
-          `What specific action can you take this week to apply one of the key points?`,
-          `Who in your life needs to hear about ${theme}, and how can you share it?`,
-          `What obstacles might prevent you from living out this truth, and how can you overcome them?`,
-          `How can you encourage others in your church community to embrace ${theme}?`,
-        ],
-      };
-      return NextResponse.json({
-        outline: mockOutline,
-        fallback: true,
-        reason: parseError.message,
-      });
+      console.error('[STUDY-GUIDE] JSON parse error:', parseError.message);
+      throw new Error('Failed to parse AI response');
     }
   } catch (error: any) {
-    console.error('Sermon outline generation error:', error);
+    console.error('Study guide generation error:', error);
     return NextResponse.json(
       { error: error.message || 'Internal server error' },
       { status: 500 }

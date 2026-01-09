@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Lightbulb, Loader2, Plus, X, Search } from 'lucide-react';
+import { Loader2, Plus, X, Search, Save, ArrowLeft, CheckCircle } from 'lucide-react';
 import DashboardHeader from '@/components/DashboardHeader';
 
 interface StudyTopic {
@@ -13,6 +12,17 @@ interface StudyTopic {
   keyQuestions: string[];
 }
 
+interface StudyGuide {
+  title: string;
+  passage: string;
+  context: string;
+  observation: string;
+  interpretation: string;
+  application: string;
+  discussion_questions: string[];
+  prayer_points: string[];
+}
+
 export default function StudyTopicsPage() {
   const [generalTheme, setGeneralTheme] = useState('');
   const [scriptures, setScriptures] = useState<string[]>([]);
@@ -21,7 +31,13 @@ export default function StudyTopicsPage() {
   const [loading, setLoading] = useState(false);
   const [topics, setTopics] = useState<StudyTopic[]>([]);
   const [error, setError] = useState('');
-  const router = useRouter();
+
+  // Study guide generation state
+  const [selectedTopic, setSelectedTopic] = useState<StudyTopic | null>(null);
+  const [generatingGuide, setGeneratingGuide] = useState(false);
+  const [studyGuide, setStudyGuide] = useState<StudyGuide | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
 
   const handleAddScripture = () => {
     if (currentScripture.trim() && scriptures.length < 5) {
@@ -46,8 +62,10 @@ export default function StudyTopicsPage() {
     setLoading(true);
     setError('');
     setTopics([]);
+    setSelectedTopic(null);
+    setStudyGuide(null);
+    setSaved(false);
 
-    // Auto-include any scripture left in the input field
     const allScriptures = [...scriptures];
     if (currentScripture.trim() && !scriptures.includes(currentScripture.trim())) {
       allScriptures.push(currentScripture.trim());
@@ -72,22 +90,276 @@ export default function StudyTopicsPage() {
 
       const data = await response.json();
       setTopics(data.topics);
-    } catch (err: any) {
-      setError(err.message || 'Something went wrong');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Something went wrong';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSelectTopic = (topic: StudyTopic) => {
-    // Store selected topic in sessionStorage and navigate to study guide generator
-    sessionStorage.setItem('selectedStudyTopic', JSON.stringify(topic));
-    router.push('/dashboard/study-guide');
+  const handleSelectTopic = async (topic: StudyTopic) => {
+    setSelectedTopic(topic);
+    setGeneratingGuide(true);
+    setStudyGuide(null);
+    setError('');
+    setSaved(false);
+
+    try {
+      const response = await fetch('/api/study-guide', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          passage: topic.scripture,
+          version: 'NIV',
+          study_type: studyType,
+          focus_theme: topic.theme,
+          key_questions: topic.keyQuestions,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate study guide');
+      }
+
+      const data = await response.json();
+      setStudyGuide({
+        title: topic.title,
+        passage: topic.scripture,
+        ...data.guide,
+      });
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to generate study guide';
+      setError(errorMessage);
+      setSelectedTopic(null);
+    } finally {
+      setGeneratingGuide(false);
+    }
   };
+
+  const handleSaveGuide = async () => {
+    if (!studyGuide) return;
+
+    setSaving(true);
+    try {
+      const response = await fetch('/api/guides', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: studyGuide.title,
+          passage: studyGuide.passage,
+          context: studyGuide.context,
+          observation: studyGuide.observation,
+          interpretation: studyGuide.interpretation,
+          application: studyGuide.application,
+          discussion_questions: studyGuide.discussion_questions,
+          prayer_points: studyGuide.prayer_points,
+          tags: [selectedTopic?.theme || 'study'],
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save study guide');
+      }
+
+      setSaved(true);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to save';
+      setError(errorMessage);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleBackToTopics = () => {
+    setSelectedTopic(null);
+    setStudyGuide(null);
+    setSaved(false);
+    setError('');
+  };
+
+  const handleStartOver = () => {
+    setTopics([]);
+    setSelectedTopic(null);
+    setStudyGuide(null);
+    setSaved(false);
+    setError('');
+    setGeneralTheme('');
+    setScriptures([]);
+  };
+
+  // Show study guide view
+  if (studyGuide) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <DashboardHeader
+          showBackLink
+          pageTitle="Study Guide"
+          pageIcon="📖"
+          colorScheme="green"
+        />
+
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Action buttons */}
+          <div className="flex items-center justify-between mb-6">
+            <button
+              onClick={handleBackToTopics}
+              className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+              style={{ color: 'var(--purple-deep)' }}
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Topics
+            </button>
+
+            <div className="flex gap-3">
+              {saved ? (
+                <span className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg bg-green-100 text-green-700">
+                  <CheckCircle className="w-4 h-4" />
+                  Saved to My Guides
+                </span>
+              ) : (
+                <button
+                  onClick={handleSaveGuide}
+                  disabled={saving}
+                  className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg text-white transition-colors disabled:opacity-50"
+                  style={{ backgroundColor: 'var(--green-liturgical)' }}
+                >
+                  {saving ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Save className="w-4 h-4" />
+                  )}
+                  {saving ? 'Saving...' : 'Save to My Guides'}
+                </button>
+              )}
+              <button
+                onClick={handleStartOver}
+                className="text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+                style={{
+                  backgroundColor: 'var(--purple-very-light)',
+                  color: 'var(--purple-deep)'
+                }}
+              >
+                New Study
+              </button>
+            </div>
+          </div>
+
+          {/* Study Guide Content */}
+          <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+            {/* Header */}
+            <div className="p-6 text-white" style={{ backgroundColor: 'var(--green-liturgical)' }}>
+              <h1 className="text-2xl font-bold mb-2" style={{ fontFamily: 'Georgia, serif' }}>
+                {studyGuide.title}
+              </h1>
+              <p className="text-white/90">{studyGuide.passage}</p>
+            </div>
+
+            {/* Content sections */}
+            <div className="p-6 space-y-6">
+              {/* Context */}
+              <section>
+                <h2 className="text-lg font-semibold mb-3 flex items-center gap-2" style={{ color: 'var(--purple-deep)', fontFamily: 'Georgia, serif' }}>
+                  <span className="text-xl">📜</span> Context
+                </h2>
+                <p className="text-gray-700 leading-relaxed whitespace-pre-line">{studyGuide.context}</p>
+              </section>
+
+              {/* Observation */}
+              <section>
+                <h2 className="text-lg font-semibold mb-3 flex items-center gap-2" style={{ color: 'var(--purple-deep)', fontFamily: 'Georgia, serif' }}>
+                  <span className="text-xl">👁️</span> Observation
+                </h2>
+                <p className="text-gray-700 leading-relaxed whitespace-pre-line">{studyGuide.observation}</p>
+              </section>
+
+              {/* Interpretation */}
+              <section>
+                <h2 className="text-lg font-semibold mb-3 flex items-center gap-2" style={{ color: 'var(--purple-deep)', fontFamily: 'Georgia, serif' }}>
+                  <span className="text-xl">💡</span> Interpretation
+                </h2>
+                <p className="text-gray-700 leading-relaxed whitespace-pre-line">{studyGuide.interpretation}</p>
+              </section>
+
+              {/* Application */}
+              <section>
+                <h2 className="text-lg font-semibold mb-3 flex items-center gap-2" style={{ color: 'var(--purple-deep)', fontFamily: 'Georgia, serif' }}>
+                  <span className="text-xl">🎯</span> Application
+                </h2>
+                <p className="text-gray-700 leading-relaxed whitespace-pre-line">{studyGuide.application}</p>
+              </section>
+
+              {/* Discussion Questions */}
+              {studyGuide.discussion_questions && studyGuide.discussion_questions.length > 0 && (
+                <section>
+                  <h2 className="text-lg font-semibold mb-3 flex items-center gap-2" style={{ color: 'var(--purple-deep)', fontFamily: 'Georgia, serif' }}>
+                    <span className="text-xl">💬</span> Discussion Questions
+                  </h2>
+                  <ol className="list-decimal list-inside space-y-2">
+                    {studyGuide.discussion_questions.map((q, i) => (
+                      <li key={i} className="text-gray-700">{q}</li>
+                    ))}
+                  </ol>
+                </section>
+              )}
+
+              {/* Prayer Points */}
+              {studyGuide.prayer_points && studyGuide.prayer_points.length > 0 && (
+                <section>
+                  <h2 className="text-lg font-semibold mb-3 flex items-center gap-2" style={{ color: 'var(--purple-deep)', fontFamily: 'Georgia, serif' }}>
+                    <span className="text-xl">🙏</span> Prayer Points
+                  </h2>
+                  <ul className="space-y-2">
+                    {studyGuide.prayer_points.map((p, i) => (
+                      <li key={i} className="text-gray-700 flex items-start gap-2">
+                        <span style={{ color: 'var(--purple-medium)' }}>•</span>
+                        {p}
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading state while generating guide
+  if (generatingGuide) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <DashboardHeader
+          showBackLink
+          pageTitle="Study Topic Explorer"
+          pageIcon="🔍"
+          colorScheme="purple"
+        />
+
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="bg-white rounded-xl shadow-lg p-12 text-center">
+            <Loader2 className="w-16 h-16 animate-spin mx-auto mb-6" style={{ color: 'var(--purple-deep)' }} />
+            <h2 className="text-2xl font-bold mb-3" style={{ fontFamily: 'Georgia, serif', color: 'var(--purple-deep)' }}>
+              Creating Your Study Guide
+            </h2>
+            <p className="text-gray-600 mb-2">
+              Generating a comprehensive study guide for:
+            </p>
+            <p className="text-lg font-semibold" style={{ color: 'var(--purple-medium)' }}>
+              {selectedTopic?.title}
+            </p>
+            <p className="text-sm text-gray-500 mt-4">
+              This may take a moment...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen">
-      {/* Shared Header with purple color scheme */}
       <DashboardHeader
         showBackLink
         pageTitle="Study Topic Explorer"
@@ -95,14 +367,13 @@ export default function StudyTopicsPage() {
         colorScheme="purple"
       />
 
-      {/* Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h2 className="text-2xl font-bold mb-2" style={{ fontFamily: 'Georgia, serif', color: 'var(--purple-deep)' }}>
             What Would You Like to Study?
           </h2>
           <p style={{ color: 'var(--text-medium)' }}>
-            Provide a topic or theme you're interested in exploring, and AI will suggest 3 focused study topics with key questions.
+            Provide a topic or theme, get 3 study topic suggestions, then select one to generate a complete study guide.
           </p>
         </div>
 
@@ -182,10 +453,9 @@ export default function StudyTopicsPage() {
                     </button>
                   </div>
                   <p className="mt-1 text-xs" style={{ color: 'var(--text-light)' }}>
-                    Add up to 5 scripture references to focus your study (press Enter or click Add)
+                    Add up to 5 scripture references to focus your study
                   </p>
 
-                  {/* Scripture Tags */}
                   {scriptures.length > 0 && (
                     <div className="flex flex-wrap gap-2 mt-3">
                       {scriptures.map((scripture, index) => (
@@ -293,16 +563,27 @@ export default function StudyTopicsPage() {
                     Your Study Topics Will Appear Here
                   </p>
                   <p className="text-sm" style={{ color: 'var(--text-medium)' }}>
-                    Enter a topic and click "Discover" to begin exploring
+                    Enter a topic and click Discover to begin exploring
                   </p>
                 </div>
               </div>
             )}
 
-            {topics.length > 0 && (
+            {loading && (
+              <div className="bg-white rounded-xl shadow-md p-8 min-h-[500px] flex items-center justify-center">
+                <div className="text-center">
+                  <Loader2 className="mx-auto h-16 w-16 mb-4 animate-spin" style={{ color: 'var(--purple-deep)' }} />
+                  <p className="text-lg font-medium" style={{ fontFamily: 'Georgia, serif', color: 'var(--text-dark)' }}>
+                    Discovering Study Topics...
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {topics.length > 0 && !loading && (
               <div className="space-y-4">
                 <h2 className="text-xl font-semibold mb-4" style={{ fontFamily: 'Georgia, serif', color: 'var(--purple-deep)' }}>
-                  Choose a Study Topic
+                  Select a Topic to Create Study Guide
                 </h2>
                 {topics.map((topic, idx) => (
                   <div
@@ -352,9 +633,9 @@ export default function StudyTopicsPage() {
                       </ul>
                     </div>
                     <div className="mt-4 text-right">
-                      <button className="text-sm font-medium group-hover:underline" style={{ color: 'var(--purple-deep)' }}>
-                        Create Study Guide from This Topic →
-                      </button>
+                      <span className="text-sm font-medium group-hover:underline" style={{ color: 'var(--purple-deep)' }}>
+                        Click to Generate Study Guide →
+                      </span>
                     </div>
                   </div>
                 ))}

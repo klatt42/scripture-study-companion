@@ -29,11 +29,39 @@ export async function signupAction(formData: {
     return { error: 'Failed to create user' };
   }
 
-  // Check if user needs email confirmation
+  // Check if user needs email confirmation - auto-confirm for development
   if (authData.user && !authData.session) {
-    return {
-      error: 'Please check your email to confirm your account. If you did not receive an email, check Supabase Auth settings to disable email confirmation.'
-    };
+    try {
+      const adminSupabase = await createAdminClient();
+
+      // Auto-confirm user email using admin client
+      const { error: confirmError } = await adminSupabase.auth.admin.updateUserById(
+        authData.user.id,
+        { email_confirm: true }
+      );
+
+      if (confirmError) {
+        console.error('Auto-confirm error:', confirmError);
+        return {
+          error: 'Please check your email to confirm your account, or contact support.'
+        };
+      }
+
+      // Sign in the user after confirming
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      if (signInError) {
+        return { error: 'Account created. Please sign in.' };
+      }
+    } catch (err) {
+      console.error('Auto-confirm failed:', err);
+      return {
+        error: 'Please check your email to confirm your account.'
+      };
+    }
   }
 
   // 2. Create profile using admin client (bypasses RLS)
